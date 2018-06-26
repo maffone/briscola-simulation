@@ -1,0 +1,135 @@
+% !TeX spellcheck = it_IT
+\documentclass[a4paper,12pt]{article}
+
+\usepackage{alltt, fancyvrb, url}
+\usepackage{graphicx}
+\usepackage{algorithmic}
+\usepackage[utf8]{inputenc}
+\usepackage{titling}
+\usepackage{fancyhdr}
+\usepackage{fontenc}
+\usepackage{amsmath,mathtools,algorithm}
+\usepackage{amssymb}
+\usepackage{longtable}
+\usepackage{setspace}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{eurosym}
+\usepackage{array}
+\usepackage[referable]{threeparttablex}
+\usepackage{pifont}
+
+\newcommand{\cmark}{\ding{51}}
+\newcommand{\xmark}{\ding{55}}
+
+\usepackage[italian,hidelinks]{hyperref}
+
+\usepackage[italian]{babel}
+\usepackage[italian]{cleveref}
+
+
+\pretitle{%
+	\begin{center}
+		\LARGE
+	}
+\posttitle{\end{center}}
+
+
+\title{\Huge \textbf{Briscola Simulation} \\
+	\vspace{10pt}
+	\vspace{20pt}
+}
+\author{
+	Gabriele Graffieti \\ \small \url{gabriele.graffieti@studio.unibo.it}
+	\vspace{15pt}
+	\\
+	Alfredo Maffi \\ \small \url{alfredo.maffi@studio.unibo.it}
+	\vspace{15pt}
+	\\
+	Manuel Peruzzi \\ \small \url{manuel.peruzzi@studio.unibo.it}
+}
+
+\date{}
+
+\begin{document}
+
+\maketitle
+\pagenumbering{arabic}
+\newpage
+\tableofcontents
+\newpage
+\section{Idea}
+
+
+\section{Analisi dei requisiti}
+
+In questo capitolo verranno elencati ed analizzati i requisiti, funzionali e non, del sistema da realizzare. 
+
+\subsection{Requisiti funzionali}
+
+Lo scopo del progetto è quello di realizzare un sistema software in grado di simulare una partita di briscola a quattro giocatori. I giocatori dovranno sottostare al regolamento illustrato nella sezione  \emph{\hyperref[briscola-rules]{regole del gioco}} fornita in appendice. Ognuno di essi dovrà cooperare con il proprio compagno al meglio delle proprie capacità per poter vincere la partita. Più nel dettaglio, i requisiti funzionali sono i seguenti:
+\begin{itemize}
+	\item Le squadre devono essere scelte a caso, così come il primo giocatore ad inizio partita.
+	\item Un giocatore può iniziare a parlare con il compagno solamente quando è di mano ed è del primo della propria squadra a giocare per la mano corrente. Fa eccezione la prima mano, in cui non è consentito parlare.
+	\item Quando un giocatore parla, tutti gli altri devono essere in grado di sentirlo. Inoltre, il compagno è sempre tenuto a rispondere.  Non sono ammessi \emph{bluff}: ogni giocatore, quando parla o risponde, è sempre obbligato a dire la verità.
+	\item Ogni giocatore deve avere come obiettivo quello di massimizzare il punteggio della propria squadra, e non quello individuale.
+	\item Ogni giocatore determina la propria giocata seguendo un propria logica interna, facendo affidamento su informazioni di varia natura. Tali informazioni sono costituite da:
+	\begin{itemize}
+		\item L'insieme delle carte che ha in mano.
+		\item Eventuali carte giocate sul tavolo da gioco dagli altri giocatori in questa mano.
+		\item Ciò che è stato detto dagli altri giocatori in questa mano.
+		\item Le carte giocate nell'ultima presa, che saranno reperibili sul tavolo da gioco.
+		\item Opzionalmente, le carte giocate nelle prese precedenti all'ultima.
+		\item Opzionalmente, ciò che è stato detto dagli altri giocatori in precedenza.
+	\end{itemize}
+\end{itemize}
+
+\subsection{Glossario} \label{glossary}
+
+% mazziere
+% mazzo
+% mano
+% parlare
+% presa
+% tavolo da gioco
+
+\subsection{Requisiti non funzionali}
+
+% tempo di giocata.
+
+\subsection{Domain model} \label{domain-model}
+
+
+\section{Analisi del problema} \label{problem-analysis}
+
+\section{Design architetturale} \label{design}
+
+\fancyhead{}
+\renewcommand{\headrulewidth}{0pt}
+\appendix
+\addcontentsline{toc}{section}{Appendice}
+\section*{Appendice}
+
+\subsection*{Regole del gioco della briscola - 4 giocatori}\label{briscola-rules}
+
+Non avendo trovato un regolamento ufficiale, si è preso come riferimento quello generale riportato in \footnote{\url{https://it.wikipedia.org/wiki/Briscola}}, con qualche piccola variazione.
+ 
+I giocatori giocano in coppie di due, con un mazzo di 40 carte regionali. I punti disponibili per ogni partita sono in totale 120, vince chi ne realizza almeno 61; se i punti sono 60 per entrambe le coppie, la partita è pareggiata. I valori di presa sono nell'ordine decrescente: Asso, 3, Re, Cavallo, Donna o Fante, 7, 6, 5, 4 e 2. Disposti i giocatori, il mazziere mischia le carte senza guardare il mazzo, distribuisce 3 carte ciascuno e lascia una carta sul tavolo coprendola per metà con il mazzo posto trasversalmente ad essa, in modo che rimanga visibile a tutti per l'intero gioco: questa carta segnerà il seme di briscola e sarà l'ultima carta ad essere pescata. Partendo dal primo giocatore (quello che ha ricevuto la prima carta) e continuando in senso antiorario. Ogni giocatore calerà la carta che riterrà più opportuna, con lo scopo di aggiudicarsi la mano o di totalizzare il maggior numero di punti assieme al proprio compagno. Da parte dei giocatori non esiste alcun obbligo di giocare un particolare tipo di seme. L'aggiudicazione della mano avviene secondo regole molto semplici:
+\begin{itemize}
+	\item il primo giocatore di mano determina il seme di mano calando la sua carta, detta dominante, e virtualmente è il vincitore temporaneo della mano.
+	\item la mano può essere temporaneamente aggiudicata ad un altro giocatore se questi posa una carta del seme di mano con valore di presa maggiore (si dice che il giocatore ha "strozzato" la dominante), oppure giocando una qualsiasi carta del seme di briscola, anche con valore di presa inferiore rispetto alla carta dominante. Bisogna sottolineare che non vi è obbligo di risposta al seme della dominante.
+\end{itemize}
+Alla fine la mano è vinta dal giocatore che ha calato la carta di briscola col valore di presa maggiore o, in mancanza di questa, dal giocatore che ha calato la carta del seme di mano con il valore di presa maggiore. Se nessuno ha strozzato la dominante e se nessuno ha giocato una briscola, la mano è vinta dal primo giocatore di mano. Il giocatore che vince la mano prende tutte le carte poste sul tavolo e le ripone coperte davanti a sé; in seguito sarà il primo a prendere la prima carta dal mazziere, seguito da tutti gli altri sempre in senso antiorario e sarà il primo ad aprire la mano successiva e quindi a decidere il nuovo seme di mano. Alla prima mano è vietato parlare, diversamente dal resto della partita dove si può parlare. Quando il mazziere esaurisce le carte, i giocatori continuano a giocare fino ad esaurire le carte che hanno in mano. A quel punto la partita termina e si procede al conteggio dei punti (in una partita a 4 giocatori, una partita termina dopo 10 mani di gioco). Il punteggio di una squadra è dato dalla somma dei punti dei due giocatori che ne fanno parte. I punteggi delle carte sono riportate di seguito:
+
+\begin{center}
+	\begin{tabular}{| l | l | l | l | l | l | l |}
+		\hline
+		\textbf{Carte} & Asso & 3 & Re & Cavallo & Fante & 7-2 \\ \hline
+		\textbf{Punti} & 11 & 10 & 4 & 3 & 2 & 0 \\ 
+		\hline
+	\end{tabular}
+\end{center}
+
+Durante lo svolgimento della partita, alle squadre non è consentito consultare le proprie prese dei turni precedenti per conteggiare i punti guadagnati. Tuttavia, in ogni momento, entrambe le squadre hanno diritto a consultare l'ultima presa che è stata fatta, ovvero quella del turno precedente.
+
+\end{document}
