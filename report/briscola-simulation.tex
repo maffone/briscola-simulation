@@ -65,7 +65,7 @@
 
 In questo capitolo verranno elencati ed analizzati i requisiti, funzionali e non, del sistema da realizzare. 
 
-\subsection{Requisiti funzionali}
+\subsection{Requisiti}
 
 Lo scopo del progetto è quello di realizzare un sistema software in grado di simulare una partita di briscola a quattro giocatori. I giocatori dovranno sottostare al regolamento illustrato nella sezione  \emph{\hyperref[briscola-rules]{regole del gioco}} fornita in appendice. Ognuno di essi dovrà cooperare con il proprio compagno al meglio delle proprie capacità per poter vincere la partita. Più nel dettaglio, i requisiti funzionali sono i seguenti:
 \begin{itemize}
@@ -82,25 +82,43 @@ Lo scopo del progetto è quello di realizzare un sistema software in grado di si
 		\item Opzionalmente, le carte giocate nelle prese precedenti all'ultima.
 		\item Opzionalmente, ciò che è stato detto dagli altri giocatori in precedenza.
 	\end{itemize}
+	\item Il tempo impiegato da un giocatore per decidere la prossima mossa non deve mai superare il tempo massimo di 2 secondi.
 \end{itemize}
 
 \subsection{Glossario} \label{glossary}
 
-% mazziere
-% mazzo
-% mano
-% parlare
-% presa
-% tavolo da gioco
+\begin{description}
+	\item[Mazzo]: insieme di 40 carte disposte a pila in ordine casuale. Ogni carta è caratterizzata da un valore e un seme. I valori sono 10: comprendono i numeri da 1 a 7 e le figure fante, cavallo e re. I semi sono 4: denari, bastoni, spade e coppe.
+	\item[Mazziere]: entità separata dai giocatori, avente l'unico scopo di distribuire le carte del mazzo ai giocatori stessi. 
+	\item[Mano]: termine utilizzato per indicare un turno completo di gioco, in cui ogni giocatore gioca una carta a partire dal primo giocatore in senso antiorario. Il primo giocatore è colui che ha vinto l'ultima presa, ad eccezione del primo turno, dove viene scelto casualmente.
+	\item[Presa]: l'insieme delle quattro carte sul tavolo al termine di una mano, che verranno assegnate al giocare che ha calato la carta dominante. Per carta dominante s'intende quella specificata nel regolamento in appendice.
+	\item[Essere di mano]: un giocatore è di mano quando tocca a lui giocare una carta.
+	\item[Parlare]: scambio di informazioni tra due giocatori di una squadra. Il giocatore che \emph{parla} porrà una domanda al compagno, il quale potrà rispondere in maniera binaria (``sì'' o ``no''). Tale domanda è finalizzata all'acquisizione di informazioni relative alle carte del compagno. BISOGNA ASSOLUTAMENTE SCEGLIERE LE DOMANDE
+	\item[Tavolo da gioco]: astrazione del tavolo fisico sul quale viene disputata la partita di briscola. Su di esso saranno posizionate le carte della mano corrente e la presa della mano precedente.
+\end{description}
 
-\subsection{Requisiti non funzionali}
+\subsection{Comportamento del sistema}
 
-% tempo di giocata.
+Dai requisiti sopra elencati, è possibile individuare sei componenti all'interno del sistema:
+\begin{itemize}
+	\item Quattro giocatori, divisi in coppie in due squadre.
+	\item Un mazziere, responsabile della distribuzione delle carte. \'E un'entità separata che non partecipa alla partita.
+	\item Un tavolo da gioco, necessario per giocare carte e tenere memoria dell'ultima presa. 
+\end{itemize}
 
-\subsection{Domain model} \label{domain-model}
+Di seguito è illustrato lo svolgimento di una partita, in modo da mettere in evidenza il comportamento del sistema e l'interazione tra i suoi componenti. Si presuppone che le due squadre siano già state formate e che i giocatori siano disposti come da regolamento.
 
+\begin{enumerate}
+	\item Il mazziere mischia il mazzo, distribuisce 3 carte ad ogni giocatore ed infine scopre una carta, il cui seme sarà la briscola per la partita corrente.
+	\item Il primo giocatore, scelto casualmente, gioca una carta calandola sul tavolo, seguito da i restanti giocatori in senso antiorario.
+	\item Quando tutte le quattro carte sono sul tavolo, queste vengono attribuite al giocatore vincente, che sarà il primo giocatore della prossima mano. A questo punto il mazziere distribuisce una carta ad ogni giocatore seguendo l'ordine della mano successiva, terminando così la mano corrente.
+	\item Nelle seguenti mani, si procederà allo stesso modo (passi 2 e 3), con la possibilità di parlare da parte dei primi due giocatori di mano.
+	\item Si procede fino all'esaurimento delle carte del mazzo e delle carte in mano ai giocatori. A questo punto, si procede al conteggio dei punti delle due squadre. Se una squadra ha totalizzato più di 60 punti è eletta vincitrice.
+\end{enumerate}
 
 \section{Analisi del problema} \label{problem-analysis}
+
+% analizzare i singoli componenti (cosa sono i giocatori? e il tavolo?). Studiare la fattiilità delle comunicazioni/interazioni, concludendo che l'utilizzo di uno spazio di tuple è la soluzione migliore.
 
 \section{Design architetturale} \label{design}
 
@@ -130,6 +148,8 @@ Alla fine la mano è vinta dal giocatore che ha calato la carta di briscola col 
 	\end{tabular}
 \end{center}
 
-Durante lo svolgimento della partita, alle squadre non è consentito consultare le proprie prese dei turni precedenti per conteggiare i punti guadagnati. Tuttavia, in ogni momento, entrambe le squadre hanno diritto a consultare l'ultima presa che è stata fatta, ovvero quella del turno precedente.
+Durante lo svolgimento della partita, alle squadre non è consentito consultare le proprie prese dei turni precedenti per conteggiare i punti guadagnati. Tuttavia, in ogni momento, entrambe le squadre hanno diritto a consultare l'ultima presa che è stata fatta, ovvero quella della mano precedente.
+
+%i giocatori di una squadra non giocano di fila.
 
 \end{document}
