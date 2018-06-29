@@ -70,6 +70,7 @@ In questo sezione verranno elencati ed analizzati i requisiti, funzionali e non,
 Lo scopo del progetto è quello di realizzare un sistema software in grado di simulare una partita di briscola a quattro giocatori. I giocatori dovranno sottostare al regolamento illustrato nella sezione  \emph{\hyperref[briscola-rules]{regole del gioco}} fornita in appendice. Ognuno di essi dovrà cooperare con il proprio compagno al meglio delle proprie capacità per poter vincere la partita. Più nel dettaglio, i requisiti funzionali sono i seguenti:
 \begin{itemize}
 	\item Le squadre devono essere scelte a caso, così come il primo giocatore ad inizio partita.
+	\item Le carte del mazzo devono essere distribuite da una mazziere, seguendo l'ordine indicato nelle \emph{\hyperref[briscola-rules]{regole del gioco}} in appendice. Il mazziere, mano dopo mano, distribuirà carte fino ad esaurimento del mazzo.
 	\item Un giocatore può iniziare a parlare con il compagno solamente quando è di mano ed è del primo della propria squadra a giocare per la mano corrente. Fa eccezione la prima mano, in cui non è consentito parlare.
 	\item Quando un giocatore parla, tutti gli altri devono essere in grado di sentirlo. Inoltre, il compagno è sempre tenuto a rispondere.  Non sono ammessi \emph{bluff}: ogni giocatore, quando parla o risponde, è sempre obbligato a dire la verità.
 	\item Ogni giocatore deve avere come obiettivo quello di massimizzare il punteggio della propria squadra, e non quello individuale.
@@ -116,6 +117,20 @@ Dai requisiti sopra elencati, è possibile individuare sei componenti all'intern
 
 Siccome i giocatori sono entità autonome con un proprio stato interno ed una capacità di \emph{reasoning} necessaria alla scelta delle carte da giocare, viene naturale modellarli come agenti. Allo stesso modo, pur non avendo la stessa capacità di \emph{reasoning}, anche il mazziere è modellato come agente. Infine, vien naturale modellare il tavolo come un'entità passiva, finalizzata a mantenere lo stato dell'ultima mano e di quella corrente. 
 
+\subsubsection{Comportamento}
+
+Di seguito è illustrato lo svolgimento di una partita, in modo da mettere in evidenza il comportamento del sistema e l'interazione tra i suoi componenti. Si presuppone che le due squadre siano già state formate e che i giocatori siano disposti come da regolamento.
+
+\begin{enumerate}
+	\item Il mazziere mischia il mazzo, distribuisce 3 carte ad ogni giocatore ed infine scopre una carta, il cui seme sarà la briscola per la partita corrente.
+	\item Il primo giocatore, scelto casualmente, gioca una carta calandola sul tavolo, seguito da i restanti giocatori in senso antiorario.
+	\item Quando tutte le quattro carte sono sul tavolo, queste vengono attribuite al giocatore vincente, che sarà il primo giocatore della prossima mano. A questo punto il mazziere distribuisce una carta ad ogni giocatore seguendo l'ordine della mano successiva, terminando così la mano corrente.
+	\item Nelle seguenti mani, si procederà allo stesso modo (passi 2 e 3), con la possibilità di parlare da parte dei primi due giocatori di mano.
+	\item Si procede fino all'esaurimento delle carte del mazzo e delle carte in mano ai giocatori. A questo punto, si procede al conteggio dei punti delle due squadre. Se una squadra ha totalizzato più di 60 punti è eletta vincitrice.
+\end{enumerate}
+
+Di seguito sono riportati due diagrammi a stati dai quali è possibile evincere, rispettivamente, comportamento dei giocatori e comportamento del mazziere.
+
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=140mm]{./img/player_state_diagram.png}
@@ -130,25 +145,14 @@ Siccome i giocatori sono entità autonome con un proprio stato interno ed una ca
 	\caption{Diagramma a stati del mazziere.  \label{dealer-state-diagram}}
 \end{figure}
 
-\subsubsection{Comportamento}
-
-Di seguito è illustrato lo svolgimento di una partita, in modo da mettere in evidenza il comportamento del sistema e l'interazione tra i suoi componenti. Si presuppone che le due squadre siano già state formate e che i giocatori siano disposti come da regolamento.
-
-\begin{enumerate}
-	\item Il mazziere mischia il mazzo, distribuisce 3 carte ad ogni giocatore ed infine scopre una carta, il cui seme sarà la briscola per la partita corrente.
-	\item Il primo giocatore, scelto casualmente, gioca una carta calandola sul tavolo, seguito da i restanti giocatori in senso antiorario.
-	\item Quando tutte le quattro carte sono sul tavolo, queste vengono attribuite al giocatore vincente, che sarà il primo giocatore della prossima mano. A questo punto il mazziere distribuisce una carta ad ogni giocatore seguendo l'ordine della mano successiva, terminando così la mano corrente.
-	\item Nelle seguenti mani, si procederà allo stesso modo (passi 2 e 3), con la possibilità di parlare da parte dei primi due giocatori di mano.
-	\item Si procede fino all'esaurimento delle carte del mazzo e delle carte in mano ai giocatori. A questo punto, si procede al conteggio dei punti delle due squadre. Se una squadra ha totalizzato più di 60 punti è eletta vincitrice.
-\end{enumerate}
-
-
-
 \subsubsection{Interazione}
 
-\section{Studio di fattibilità} \label{problem-analysis}
+Consultando i requisiti, è facile notare che l'interazione tra i componenti del sistema costituisce il punto focale del progetto, se non quello più delicato e complesso. Siccome dai requisiti stessi non è possibile evincere un schema di interazione, è necessaria un'analisi nel dettaglio per determinare lo schema migliore, effettuato nella prossima sezione.  
 
-% analizzare i singoli componenti (cosa sono i giocatori? e il tavolo?). Studiare la fattiilità delle comunicazioni/interazioni, concludendo che l'utilizzo di uno spazio di tuple è la soluzione migliore.
+\section{Analisi del problema} \label{problem-analysis}
+
+\subsection{Studio di fattibilità}
+% analizzare i singoli componenti (cosa sono i giocatori? e il tavolo?). Studiare la fattiilità delle comunicazioni/interazioni, concludendo che l'utilizzo di uno spazio di tuple è la soluzione migliore. chi conta i punti e dice chi ha vinto una mano?
 
 \section{Design architetturale} \label{design}
 
