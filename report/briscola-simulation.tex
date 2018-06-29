@@ -104,7 +104,7 @@ Lo scopo del progetto è quello di realizzare un sistema software in grado di si
 	\item[Tavolo da gioco]: astrazione del tavolo fisico sul quale viene disputata la partita di briscola. Su di esso saranno posizionate le carte della mano corrente e la presa della mano precedente.
 \end{description}
 
-\subsection{Modello del dominio}
+\subsection{Modello del dominio} \label{domain-model}
 
 \subsubsection{Struttura}
 
@@ -150,6 +150,14 @@ Di seguito sono riportati due diagrammi a stati dai quali è possibile evincere,
 Consultando i requisiti, è facile notare che l'interazione tra i componenti del sistema costituisce il punto focale del progetto, se non quello più delicato e complesso. Siccome dai requisiti stessi non è possibile evincere un schema di interazione, è necessaria un'analisi nel dettaglio per determinare lo schema migliore, effettuato nella prossima sezione.  
 
 \section{Analisi del problema} \label{problem-analysis}
+Il modello del dominio, individuato in \autoref{domain-model}, non risulta adeguatamente sviluppato per procedere alla fase di progettazione del sistema. I componenti individuati non sono sufficienti per un completo svolgimento di una partita. Un'importante funzionalità del sistema consiste nell'assegnamento di ogni presa al giocatore vincente, e nel conseguente conteggio finale dei punti accumulati dalle due squadre. Tale funzionalità non è ricoperta da nessuno dei componenti individuati. L'unico di essi che concettualmente potrebbe svolgere un tale compito è il tavolo da gioco. Le funzionalità espresse in precedenza implicano che il componente che ne è responsabile sia un'entità attiva con un proprio flusso di controllo. Il tavolo, modellato in precedenza come entità passiva, non risulta adeguato a svolgere tali mansioni. Perciò si rende necessaria l'introduzione di un nuovo componente, ovvero \emph{arbitro}.
+
+Inoltre, dai requisiti non è chiaro in che modo le entità del sistema possano coordinarsi tra loro durante lo svolgimento di una partita. In particolare, non è specificata la modalità tramite la quale un giocatore sappia qual è il momento adatto per effettuare la sua giocata in una determinata mano. Allo stesso modo, non è indicato come il mazziere venga a conoscenza del momento in cui si conclude la fase di assegnazione della mano, per poi procedere alla distribuzione delle carte. Questa problematica potrebbe essere risolta in diversi modi:
+\begin{itemize}
+	\item Introduzione di un orchestratore: la coordinazione tra le entità del sistema potrebbe essere garantita dall'introduzione di un nuovo componente adibito.
+	\item Assegnamento del compito di orchestratore all'arbitro: data la concezione di arbitro, non è difficile immaginare che possa essere proprio tale componente a fornire anche funzionalità di coordinazione di una partita.
+	\item Coordinazione tramite le informazioni sul tavolo: siccome il tavolo è l'entità sulla quale si svolge la partita, esso potrebbe essere considerato come una sorgente di informazioni ed eventi, utilizzabili da giocatori, mazziere e arbitro per coordinarsi.
+\end{itemize}
 
 \subsection{Studio di fattibilità}
 % analizzare i singoli componenti (cosa sono i giocatori? e il tavolo?). Studiare la fattiilità delle comunicazioni/interazioni, concludendo che l'utilizzo di uno spazio di tuple è la soluzione migliore. chi conta i punti e dice chi ha vinto una mano?
