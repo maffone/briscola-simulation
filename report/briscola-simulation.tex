@@ -63,7 +63,7 @@
 
 \section{Analisi dei requisiti}
 
-In questo capitolo verranno elencati ed analizzati i requisiti, funzionali e non, del sistema da realizzare. 
+In questo sezione verranno elencati ed analizzati i requisiti, funzionali e non, del sistema da realizzare. 
 
 \subsection{Requisiti}
 
@@ -93,11 +93,19 @@ Lo scopo del progetto è quello di realizzare un sistema software in grado di si
 	\item[Mano]: termine utilizzato per indicare un turno completo di gioco, in cui ogni giocatore gioca una carta a partire dal primo giocatore in senso antiorario. Il primo giocatore è colui che ha vinto l'ultima presa, ad eccezione del primo turno, dove viene scelto casualmente.
 	\item[Presa]: l'insieme delle quattro carte sul tavolo al termine di una mano, che verranno assegnate al giocare che ha calato la carta dominante. Per carta dominante s'intende quella specificata nel regolamento in appendice.
 	\item[Essere di mano]: un giocatore è di mano quando tocca a lui giocare una carta.
-	\item[Parlare]: scambio di informazioni tra due giocatori di una squadra. Il giocatore che \emph{parla} porrà una domanda al compagno, il quale potrà rispondere in maniera binaria (``sì'' o ``no''). Tale domanda è finalizzata all'acquisizione di informazioni relative alle carte del compagno. BISOGNA ASSOLUTAMENTE SCEGLIERE LE DOMANDE
+	\item[Fascia di valore]: raggruppamento di carte sulla base del loro valore. Le fasce sono 3: \emph{carico} (3 e asso), \emph{figura} (re, cavallo e fante) e \emph{liscia} (7, 6, 5, 4, 2).
+	\item[Parlare]: scambio di informazioni tra due giocatori di una squadra. Il giocatore che \emph{parla} porrà una domanda al compagno, il quale potrà rispondere in maniera binaria (``sì'' o ``no''). Tale domanda è finalizzata all'acquisizione di informazioni relative alle carte del compagno. Ogni domanda può contenere l'indicazione di una fascia di valore, di un seme o di entrambi: chi la riceve, risponderà positivamente soltanto se possiede almeno carta conforme all'indicazione. Seguono due esempi di domande lecite:
+	\begin{itemize}
+		\item "Hai una \emph{figura} di \emph{bastoni}?"
+		\item "Hai una carta di \emph{denari}?"
+	\end{itemize} 
+	Presupponendo che chi riceve la domanda abbia in mano cavallo di bastoni, quattro di coppe e due di spade, risponderà positivamente alla prima domanda e negativamente alla seconda.   
 	\item[Tavolo da gioco]: astrazione del tavolo fisico sul quale viene disputata la partita di briscola. Su di esso saranno posizionate le carte della mano corrente e la presa della mano precedente.
 \end{description}
 
-\subsection{Comportamento del sistema}
+\subsection{Modello del dominio}
+
+\subsubsection{Struttura}
 
 Dai requisiti sopra elencati, è possibile individuare sei componenti all'interno del sistema:
 \begin{itemize}
@@ -105,6 +113,24 @@ Dai requisiti sopra elencati, è possibile individuare sei componenti all'intern
 	\item Un mazziere, responsabile della distribuzione delle carte. \'E un'entità separata che non partecipa alla partita.
 	\item Un tavolo da gioco, necessario per giocare carte e tenere memoria dell'ultima presa. 
 \end{itemize}
+
+Siccome i giocatori sono entità autonome con un proprio stato interno ed una capacità di \emph{reasoning} necessaria alla scelta delle carte da giocare, viene naturale modellarli come agenti. Allo stesso modo, pur non avendo la stessa capacità di \emph{reasoning}, anche il mazziere è modellato come agente. Infine, vien naturale modellare il tavolo come un'entità passiva, finalizzata a mantenere lo stato dell'ultima mano e di quella corrente. 
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=140mm]{./img/player_state_diagram.png}
+	\caption{Diagramma a stati di un giocatore.  \label{player-state-diagram}}
+\end{figure}
+
+
+\begin{figure}[H]
+	\hspace*{-0.7in}
+	\centering
+	\includegraphics[width=70mm]{./img/dealer_state_diagram.png}
+	\caption{Diagramma a stati del mazziere.  \label{dealer-state-diagram}}
+\end{figure}
+
+\subsubsection{Comportamento}
 
 Di seguito è illustrato lo svolgimento di una partita, in modo da mettere in evidenza il comportamento del sistema e l'interazione tra i suoi componenti. Si presuppone che le due squadre siano già state formate e che i giocatori siano disposti come da regolamento.
 
@@ -116,7 +142,11 @@ Di seguito è illustrato lo svolgimento di una partita, in modo da mettere in ev
 	\item Si procede fino all'esaurimento delle carte del mazzo e delle carte in mano ai giocatori. A questo punto, si procede al conteggio dei punti delle due squadre. Se una squadra ha totalizzato più di 60 punti è eletta vincitrice.
 \end{enumerate}
 
-\section{Analisi del problema} \label{problem-analysis}
+
+
+\subsubsection{Interazione}
+
+\section{Studio di fattibilità} \label{problem-analysis}
 
 % analizzare i singoli componenti (cosa sono i giocatori? e il tavolo?). Studiare la fattiilità delle comunicazioni/interazioni, concludendo che l'utilizzo di uno spazio di tuple è la soluzione migliore.
 
@@ -132,7 +162,7 @@ Di seguito è illustrato lo svolgimento di una partita, in modo da mettere in ev
 
 Non avendo trovato un regolamento ufficiale, si è preso come riferimento quello generale riportato in \footnote{\url{https://it.wikipedia.org/wiki/Briscola}}, con qualche piccola variazione.
  
-I giocatori giocano in coppie di due, con un mazzo di 40 carte regionali. I punti disponibili per ogni partita sono in totale 120, vince chi ne realizza almeno 61; se i punti sono 60 per entrambe le coppie, la partita è pareggiata. I valori di presa sono nell'ordine decrescente: Asso, 3, Re, Cavallo, Donna o Fante, 7, 6, 5, 4 e 2. Disposti i giocatori, il mazziere mischia le carte senza guardare il mazzo, distribuisce 3 carte ciascuno e lascia una carta sul tavolo coprendola per metà con il mazzo posto trasversalmente ad essa, in modo che rimanga visibile a tutti per l'intero gioco: questa carta segnerà il seme di briscola e sarà l'ultima carta ad essere pescata. Partendo dal primo giocatore (quello che ha ricevuto la prima carta) e continuando in senso antiorario. Ogni giocatore calerà la carta che riterrà più opportuna, con lo scopo di aggiudicarsi la mano o di totalizzare il maggior numero di punti assieme al proprio compagno. Da parte dei giocatori non esiste alcun obbligo di giocare un particolare tipo di seme. L'aggiudicazione della mano avviene secondo regole molto semplici:
+I giocatori giocano in coppie di due, con un mazzo di 40 carte regionali. I punti disponibili per ogni partita sono in totale 120, vince chi ne realizza almeno 61; se i punti sono 60 per entrambe le coppie, la partita è pareggiata. I valori di presa sono nell'ordine decrescente: Asso, 3, Re, Cavallo, Donna o Fante, 7, 6, 5, 4 e 2. I giocatori devono essere disposti facendo sì che ognuno di essi abbia ai suoi lati i giocatori della squadra avversaria, in modo che due giocatori della stessa squadra non giochino mai consecutivamente. Disposti i giocatori, il mazziere mischia le carte senza guardare il mazzo, distribuisce 3 carte ciascuno e lascia una carta sul tavolo coprendola per metà con il mazzo posto trasversalmente ad essa, in modo che rimanga visibile a tutti per l'intero gioco: questa carta segnerà il seme di briscola e sarà l'ultima carta ad essere pescata. Partendo dal primo giocatore (quello che ha ricevuto la prima carta) e continuando in senso antiorario. Ogni giocatore calerà la carta che riterrà più opportuna, con lo scopo di aggiudicarsi la mano o di totalizzare il maggior numero di punti assieme al proprio compagno. Da parte dei giocatori non esiste alcun obbligo di giocare un particolare tipo di seme. L'aggiudicazione della mano avviene secondo regole molto semplici:
 \begin{itemize}
 	\item il primo giocatore di mano determina il seme di mano calando la sua carta, detta dominante, e virtualmente è il vincitore temporaneo della mano.
 	\item la mano può essere temporaneamente aggiudicata ad un altro giocatore se questi posa una carta del seme di mano con valore di presa maggiore (si dice che il giocatore ha "strozzato" la dominante), oppure giocando una qualsiasi carta del seme di briscola, anche con valore di presa inferiore rispetto alla carta dominante. Bisogna sottolineare che non vi è obbligo di risposta al seme della dominante.
@@ -149,7 +179,5 @@ Alla fine la mano è vinta dal giocatore che ha calato la carta di briscola col 
 \end{center}
 
 Durante lo svolgimento della partita, alle squadre non è consentito consultare le proprie prese dei turni precedenti per conteggiare i punti guadagnati. Tuttavia, in ogni momento, entrambe le squadre hanno diritto a consultare l'ultima presa che è stata fatta, ovvero quella della mano precedente.
-
-%i giocatori di una squadra non giocano di fila.
 
 \end{document}
