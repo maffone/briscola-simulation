@@ -160,6 +160,15 @@ Inoltre, dai requisiti non è chiaro in che modo le entità del sistema possano 
 \end{itemize}
 Fra le opzioni elencate, è stato scelto di mettere in atto la seconda, attribuendo all'arbitro il ruolo di orchestratore della partita.
 
+
+
+\begin{figure}[H]
+	\hspace*{-0.7in}
+	\centering
+	\includegraphics[width=180mm]{./img/general_sequence_diagram.png}
+	\caption{Diagramma di sequenza del sistema.  \label{general-sequence-diagram}}
+\end{figure}
+
 \subsection{Studio di fattibilità}
 \subsubsection{Componenti}
 Tutti i componenti, ad esclusione del tavolo da gioco, sono stati identificati come entità attive. Le soluzioni più consone per la modellazione di tali componenti ricadono nell'utilizzo degli attori o degli agenti. Infatti, queste astrazioni si basano sul fatto che ogni componente sia contraddistinto da un proprio flusso di controllo (logico o fisico) e risultano quindi ideali per l'implementazione di giocatori, mazziere e arbitro.
