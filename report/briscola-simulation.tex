@@ -61,7 +61,7 @@
 \section{Idea}
 
 
-\section{Analisi dei requisiti}
+\section{Analisi dei requisiti} \label{requirements-analysis}
 
 In questo sezione verranno elencati ed analizzati i requisiti, funzionali e non, del sistema da realizzare. 
 
@@ -154,28 +154,37 @@ Il modello del dominio, individuato in \autoref{domain-model}, non risulta adegu
 
 Inoltre, dai requisiti non è chiaro in che modo le entità del sistema possano coordinarsi tra loro durante lo svolgimento di una partita. In particolare, non è specificata la modalità tramite la quale un giocatore sappia qual è il momento adatto per effettuare la sua giocata in una determinata mano. Allo stesso modo, non è indicato come il mazziere venga a conoscenza del momento in cui si conclude la fase di assegnazione della mano, per poi procedere alla distribuzione delle carte. Questa problematica potrebbe essere risolta in diversi modi:
 \begin{itemize}
-	\item Introduzione di un orchestratore: la coordinazione tra le entità del sistema potrebbe essere garantita dall'introduzione di un nuovo componente adibito.
-	\item Assegnamento del compito di orchestratore all'arbitro: data la concezione di arbitro, non è difficile immaginare che possa essere proprio tale componente a fornire anche funzionalità di coordinazione di una partita.
-	\item Coordinazione tramite le informazioni sul tavolo: siccome il tavolo è l'entità sulla quale si svolge la partita, esso potrebbe essere considerato come una sorgente di informazioni ed eventi, utilizzabili da giocatori, mazziere e arbitro per coordinarsi.
+	\item \textbf{Introduzione di un orchestratore}: la coordinazione tra le entità del sistema potrebbe essere garantita dall'introduzione di un nuovo componente adibito.
+	\item \textbf{Assegnamento del compito di orchestratore all'arbitro}: data la concezione di arbitro, non è difficile immaginare che possa essere proprio tale componente a fornire anche funzionalità di coordinazione di una partita.
+	\item \textbf{Coordinazione tramite le informazioni sul tavolo}: siccome il tavolo è l'entità sulla quale si svolge la partita, esso potrebbe essere considerato come una sorgente di informazioni ed eventi, utilizzabili da giocatori, mazziere e arbitro per coordinarsi.
 \end{itemize}
-Fra le opzioni elencate, è stato scelto di mettere in atto la seconda, attribuendo all'arbitro il ruolo di orchestratore della partita.
+Fra le opzioni elencate, è sembrato più appropriato mettere in atto la seconda, attribuendo all'arbitro il ruolo di orchestratore della partita.
 
+Sulla base di quanto discusso, in \autoref{general-sequence-diagram} è illustrato un diagramma di sequenza, in modo da mettere in evidenza l'interazione tra i componenti del sistema.
 
 
 \begin{figure}[H]
 	\hspace*{-0.7in}
 	\centering
 	\includegraphics[width=180mm]{./img/general_sequence_diagram.png}
-	\caption{Diagramma di sequenza del sistema.  \label{general-sequence-diagram}}
+	\caption{Diagramma di sequenza del sistema per il primo turno. Per motivi grafici non sono stati inclusi nella rappresentazione tutti i giocatori di una partita, ma solamente uno di essi. \label{general-sequence-diagram}}
 \end{figure}
 
-\subsection{Studio di fattibilità}
-\subsubsection{Componenti}
+Le mani successive sono molto simili alla prima, anche se presentano una meccanica aggiuntiva: i primi giocatori di ogni squadra hanno la possibilità di parlare con il compagno. La dinamica che descrive lo svolgimento di tale azione non è stata approfondita in maniera adeguata nella fase di analisi dei requisiti in \autoref{requirements-analysis}. Essa può essere modellata attraverso due principali schemi di interazione:
+\begin{itemize}
+	\item \textbf{Comunicazione diretta}: la soluzione più semplice consiste nel fare in modo che il giocatore che parla comunichi in modo diretto la propria domanda sia al compagno di squadra, sia ai giocatori avversari. La risposta, allo stesso modo, deve essere trasmessa a tutti i giocatori.
+	\item \textbf{Comunicazione mediata}: in questo caso si considera l'etere come lo spazio nel quale avviene la comunicazione. Un giocatore quando parla trasmette le proprie informazioni nell'ambiente in cui si svolge la partita. La domanda posta dal giocatore è rivolta al compagno di gioco, ma può essere recepita da tutte le entità situate nell'ambiente circostante. Solo il compagno sarà responsabile di rispondere alla domanda, propagando l'informazione sullo spazio comune tra i giocatori.
+\end{itemize}
+
+
+
+\section{Studio di fattibilità}
+\subsection{Componenti}
 Tutti i componenti, ad esclusione del tavolo da gioco, sono stati identificati come entità attive. Le soluzioni più consone per la modellazione di tali componenti ricadono nell'utilizzo degli attori o degli agenti. Infatti, queste astrazioni si basano sul fatto che ogni componente sia contraddistinto da un proprio flusso di controllo (logico o fisico) e risultano quindi ideali per l'implementazione di giocatori, mazziere e arbitro.
 
 Il tavolo da gioco è un componente passivo con il quale è possibile interagire tramite chiamate ai metodi che esso metterà a disposizione.
 
-\subsubsection{Interazione}
+\subsection{Interazione}
 % Studiare la fattiilità delle comunicazioni/interazioni, concludendo che l'utilizzo di uno spazio di tuple è la soluzione migliore.
 Come espresso in precedenza, i requisiti non pongono vincoli sulle modalità di interazione dei componenti. Segue uno studio sulle possibili strategie adottabili per far fronte a tale questione.
 
