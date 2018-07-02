@@ -71,7 +71,7 @@ Lo scopo del progetto è quello di realizzare un sistema software in grado di si
 \begin{itemize}
 	\item Le squadre devono essere scelte a caso, così come il primo giocatore ad inizio partita.
 	\item Le carte del mazzo devono essere distribuite da una mazziere, seguendo l'ordine indicato nelle \emph{\hyperref[briscola-rules]{regole del gioco}} in appendice. Il mazziere, mano dopo mano, distribuirà carte fino ad esaurimento del mazzo.
-	\item Un giocatore può iniziare a parlare con il compagno solamente quando è di mano ed è del primo della propria squadra a giocare per la mano corrente. Fa eccezione la prima mano, in cui non è consentito parlare.
+	\item Un giocatore può iniziare a parlare con il compagno solamente quando è di mano ed è il primo della propria squadra a giocare per la mano corrente. Fa eccezione la prima mano, in cui non è consentito parlare.
 	\item Quando un giocatore parla, tutti gli altri devono essere in grado di sentirlo. Inoltre, il compagno è sempre tenuto a rispondere.  Non sono ammessi \emph{bluff}: ogni giocatore, quando parla o risponde, è sempre obbligato a dire la verità.
 	\item Ogni giocatore deve avere come obiettivo quello di massimizzare il punteggio della propria squadra, e non quello individuale.
 	\item Ogni giocatore determina la propria giocata seguendo un propria logica interna, facendo affidamento su informazioni di varia natura. Tali informazioni sono costituite da:
@@ -94,8 +94,8 @@ Lo scopo del progetto è quello di realizzare un sistema software in grado di si
 	\item[Mano]: termine utilizzato per indicare un turno completo di gioco, in cui ogni giocatore gioca una carta a partire dal primo giocatore in senso antiorario. Il primo giocatore è colui che ha vinto l'ultima presa, ad eccezione del primo turno, dove viene scelto casualmente.
 	\item[Presa]: l'insieme delle quattro carte sul tavolo al termine di una mano, che verranno assegnate al giocare che ha calato la carta dominante. Per carta dominante s'intende quella specificata nel regolamento in appendice.
 	\item[Essere di mano]: un giocatore è di mano quando tocca a lui giocare una carta.
-	\item[Fascia di valore]: raggruppamento di carte sulla base del loro valore. Le fasce sono 3: \emph{carico} (3 e asso), \emph{figura} (re, cavallo e fante) e \emph{liscia} (7, 6, 5, 4, 2).
-	\item[Parlare]: scambio di informazioni tra due giocatori di una squadra. Il giocatore che \emph{parla} porrà una domanda al compagno, il quale potrà rispondere in maniera binaria (``sì'' o ``no''). Tale domanda è finalizzata all'acquisizione di informazioni relative alle carte del compagno. Ogni domanda può contenere l'indicazione di una fascia di valore, di un seme o di entrambi: chi la riceve, risponderà positivamente soltanto se possiede almeno carta conforme all'indicazione. Seguono due esempi di domande lecite:
+	\item[Fascia di valore]: raggruppamento di carte sulla base del loro valore. Le fasce sono tre: \emph{carico} (3 e asso), \emph{figura} (re, cavallo e fante) e \emph{liscia} (7, 6, 5, 4, 2).
+	\item[Parlare]: scambio di informazioni tra due giocatori di una squadra. Il giocatore che \emph{parla} pone una domanda al compagno, il quale può rispondere in maniera binaria (``sì'' o ``no''). Tale domanda è finalizzata all'acquisizione di informazioni relative alle carte del compagno. Ogni domanda può contenere l'indicazione di una fascia di valore, di un seme o di entrambi: chi la riceve, risponde positivamente soltanto se possiede almeno una carta conforme all'indicazione. Seguono due esempi di domande lecite:
 	\begin{itemize}
 		\item "Hai una \emph{figura} di \emph{bastoni}?"
 		\item "Hai una carta di \emph{denari}?"
@@ -115,7 +115,7 @@ Dai requisiti sopra elencati, è possibile individuare sei componenti all'intern
 	\item Un tavolo da gioco, necessario per giocare carte e tenere memoria dell'ultima presa. 
 \end{itemize}
 
-Siccome i giocatori sono entità autonome con un proprio stato interno ed una capacità di \emph{reasoning} necessaria alla scelta delle carte da giocare, viene naturale modellarli come entità attiva. Allo stesso modo, pur non avendo la stessa capacità di \emph{reasoning}, anche il mazziere è modellato come entità attiva. Infine, vien naturale modellare il tavolo come un'entità passiva, finalizzata a mantenere lo stato dell'ultima mano e di quella corrente. 
+Siccome i giocatori sono entità autonome con un proprio stato interno ed una capacità di \emph{reasoning} necessaria alla scelta delle carte da giocare, viene naturale modellarli come entità attive. Allo stesso modo, pur non avendo la stessa capacità di \emph{reasoning}, anche il mazziere è modellato come entità attiva. Infine, vien naturale modellare il tavolo come un'entità passiva, finalizzata a mantenere lo stato dell'ultima mano e di quella corrente. 
 
 \subsubsection{Comportamento}
 
@@ -123,13 +123,13 @@ Di seguito è illustrato lo svolgimento di una partita, in modo da mettere in ev
 
 \begin{enumerate}
 	\item Il mazziere mischia il mazzo, distribuisce 3 carte ad ogni giocatore ed infine scopre una carta, il cui seme sarà la briscola per la partita corrente.
-	\item Il primo giocatore, scelto casualmente, gioca una carta calandola sul tavolo, seguito da i restanti giocatori in senso antiorario.
+	\item Il primo giocatore, scelto casualmente, gioca una carta calandola sul tavolo, seguito dai restanti giocatori in senso antiorario.
 	\item Quando tutte le quattro carte sono sul tavolo, queste vengono attribuite al giocatore vincente, che sarà il primo giocatore della prossima mano. A questo punto il mazziere distribuisce una carta ad ogni giocatore seguendo l'ordine della mano successiva, terminando così la mano corrente.
 	\item Nelle seguenti mani, si procederà allo stesso modo (passi 2 e 3), con la possibilità di parlare da parte dei primi due giocatori di mano.
 	\item Si procede fino all'esaurimento delle carte del mazzo e delle carte in mano ai giocatori. A questo punto, si procede al conteggio dei punti delle due squadre. Se una squadra ha totalizzato più di 60 punti è eletta vincitrice.
 \end{enumerate}
 
-Di seguito sono riportati due diagrammi a stati dai quali è possibile evincere, rispettivamente, comportamento dei giocatori e comportamento del mazziere.
+Di seguito sono riportati due diagrammi a stati dai quali è possibile evincere comportamento dei giocatori e comportamento del mazziere rispettivamente in \autoref{player-state-diagram} e in \autoref{dealer-state-diagram}.
 
 \begin{figure}[H]
 	\centering
@@ -175,7 +175,9 @@ Le mani successive sono molto simili alla prima, anche se presentano una meccani
 	\item \textbf{Comunicazione diretta}: la soluzione più semplice consiste nel fare in modo che il giocatore che parla comunichi in modo diretto la propria domanda sia al compagno di squadra, sia ai giocatori avversari. La risposta, allo stesso modo, deve essere trasmessa a tutti i giocatori.
 	\item \textbf{Comunicazione mediata}: in questo caso si considera l'etere come lo spazio nel quale avviene la comunicazione. Un giocatore quando parla trasmette le proprie informazioni nell'ambiente in cui si svolge la partita. La domanda posta dal giocatore è rivolta al compagno di gioco, ma può essere recepita da tutte le entità situate nell'ambiente circostante. Solo il compagno sarà responsabile di rispondere alla domanda, propagando l'informazione sullo spazio comune tra i giocatori.
 \end{itemize}
+La seconda opzione implica una rivisitazione del modello del sistema abbozzato fino ad ora, ma garantisce un grado di disaccoppiamento tra i giocatori. In questo caso, una nozione di \emph{situatedness} si rivela determinante per il sistema. Ogni giocatore risulta situato in un ambiente di gioco, nel quale può consultare le carte che si trovano sul tavolo ed è in grado di recepire tutte le informazioni emesse dagli altri giocatori. In questo contesto, l'ambiente di gioco deve necessariamente essere considerato come un'astrazione di primo ordine, attraverso l'introduzione nel sistema di un nuovo componente, il \emph{game environment}. Esso include al suo interno anche il tavolo da gioco, che non è altro che una astrazione attraverso la quale ogni giocatore interagisce con l'ambiente, ricevendo da essa delle informazioni che influiscono sul proprio comportamento e agendo in modo da cambiare lo stato del mondo corrente. 
 
+Ogni giocatore interagisce costantemente con il \emph{game environment}, sia per quanto riguarda le azioni relative al tavolo da gioco (come consultazione della mano corrente, giocata di una carta, \dots), sia per quanto riguarda la trasmissione delle informazioni quando un giocatore parla. L'interazione tra il tavolo e gli altri componenti del sistema è stata già affrontata e sviscerata in precedenza e non necessita di essere riveduta. Risulta diverso, invece, il discorso relativo all'azione di parlare, la cui dinamica è rappresentata nel diagramma di sequenza in \autoref{}.
 
 
 \section{Studio di fattibilità}
