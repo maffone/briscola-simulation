@@ -115,7 +115,7 @@ Dai requisiti sopra elencati, è possibile individuare sei componenti all'intern
 	\item Un tavolo da gioco, necessario per giocare carte e tenere memoria dell'ultima presa. 
 \end{itemize}
 
-Siccome i giocatori sono entità autonome con un proprio stato interno ed una capacità di \emph{reasoning} necessaria alla scelta delle carte da giocare, viene naturale modellarli come agenti. Allo stesso modo, pur non avendo la stessa capacità di \emph{reasoning}, anche il mazziere è modellato come agente. Infine, vien naturale modellare il tavolo come un'entità passiva, finalizzata a mantenere lo stato dell'ultima mano e di quella corrente. 
+Siccome i giocatori sono entità autonome con un proprio stato interno ed una capacità di \emph{reasoning} necessaria alla scelta delle carte da giocare, viene naturale modellarli come entità attiva. Allo stesso modo, pur non avendo la stessa capacità di \emph{reasoning}, anche il mazziere è modellato come entità attiva. Infine, vien naturale modellare il tavolo come un'entità passiva, finalizzata a mantenere lo stato dell'ultima mano e di quella corrente. 
 
 \subsubsection{Comportamento}
 
@@ -158,9 +158,21 @@ Inoltre, dai requisiti non è chiaro in che modo le entità del sistema possano 
 	\item Assegnamento del compito di orchestratore all'arbitro: data la concezione di arbitro, non è difficile immaginare che possa essere proprio tale componente a fornire anche funzionalità di coordinazione di una partita.
 	\item Coordinazione tramite le informazioni sul tavolo: siccome il tavolo è l'entità sulla quale si svolge la partita, esso potrebbe essere considerato come una sorgente di informazioni ed eventi, utilizzabili da giocatori, mazziere e arbitro per coordinarsi.
 \end{itemize}
+Fra le opzioni elencate, è stato scelto di mettere in atto la seconda, attribuendo all'arbitro il ruolo di orchestratore della partita.
 
 \subsection{Studio di fattibilità}
-% analizzare i singoli componenti (cosa sono i giocatori? e il tavolo?). Studiare la fattiilità delle comunicazioni/interazioni, concludendo che l'utilizzo di uno spazio di tuple è la soluzione migliore. chi conta i punti e dice chi ha vinto una mano?
+\subsubsection{Componenti}
+Tutti i componenti, ad esclusione del tavolo da gioco, sono stati identificati come entità attive. Le soluzioni più consone per la modellazione di tali componenti ricadono nell'utilizzo degli attori o degli agenti. Infatti, queste astrazioni si basano sul fatto che ogni componente sia contraddistinto da un proprio flusso di controllo (logico o fisico) e risultano quindi ideali per l'implementazione di giocatori, mazziere e arbitro.
+
+Il tavolo da gioco è un componente passivo con il quale è possibile interagire tramite chiamate ai metodi che esso metterà a disposizione.
+
+\subsubsection{Interazione}
+% Studiare la fattiilità delle comunicazioni/interazioni, concludendo che l'utilizzo di uno spazio di tuple è la soluzione migliore.
+Come espresso in precedenza, i requisiti non pongono vincoli sulle modalità di interazione dei componenti. Segue uno studio sulle possibili strategie adottabili per far fronte a tale questione.
+
+\begin{description}
+	\item[Scambio di messaggi]:
+\end{description}
 
 \section{Design architetturale} \label{design}
 
