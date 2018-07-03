@@ -67,7 +67,7 @@ In questo sezione verranno elencati ed analizzati i requisiti, funzionali e non,
 
 \subsection{Requisiti}
 
-Lo scopo del progetto è quello di realizzare un sistema software in grado di simulare una partita di briscola a quattro giocatori. I giocatori dovranno sottostare al regolamento illustrato nella sezione  \emph{\hyperref[briscola-rules]{regole del gioco}} fornita in appendice. Ognuno di essi dovrà cooperare con il proprio compagno al meglio delle proprie capacità per poter vincere la partita. Più nel dettaglio, i requisiti funzionali sono i seguenti:
+Lo scopo del progetto è quello di realizzare un sistema software in grado di simulare una partita di briscola a quattro giocatori. I giocatori dovranno sottostare al regolamento illustrato nella sezione \emph{\hyperref[briscola-rules]{regole del gioco}} fornita in appendice. Ognuno di essi dovrà cooperare con il proprio compagno al meglio delle proprie capacità per poter vincere la partita. Più nel dettaglio, i requisiti funzionali sono i seguenti:
 \begin{itemize}
 	\item Le squadre devono essere scelte a caso, così come il primo giocatore ad inizio partita.
 	\item Le carte del mazzo devono essere distribuite da una mazziere, seguendo l'ordine indicato nelle \emph{\hyperref[briscola-rules]{regole del gioco}} in appendice. Il mazziere, mano dopo mano, distribuirà carte fino ad esaurimento del mazzo.
@@ -177,28 +177,24 @@ Le mani successive sono molto simili alla prima, anche se presentano una meccani
 \end{itemize}
 La seconda opzione implica una rivisitazione del modello del sistema abbozzato fino ad ora, ma garantisce un grado di disaccoppiamento tra i giocatori. In questo caso, una nozione di \emph{situatedness} si rivela determinante per il sistema. Ogni giocatore risulta situato in un ambiente di gioco, nel quale può consultare le carte che si trovano sul tavolo ed è in grado di recepire tutte le informazioni emesse dagli altri giocatori. In questo contesto, l'ambiente di gioco deve necessariamente essere considerato come un'astrazione di primo ordine, attraverso l'introduzione nel sistema di un nuovo componente, il \emph{game environment}. Esso include al suo interno anche il tavolo da gioco, che non è altro che una astrazione attraverso la quale ogni giocatore interagisce con l'ambiente, ricevendo da essa delle informazioni che influiscono sul proprio comportamento e agendo in modo da cambiare lo stato del mondo corrente. 
 
-Ogni giocatore interagisce costantemente con il \emph{game environment}, sia per quanto riguarda le azioni relative al tavolo da gioco (come consultazione della mano corrente, giocata di una carta, \dots), sia per quanto riguarda la trasmissione delle informazioni quando un giocatore parla. L'interazione tra il tavolo e gli altri componenti del sistema è stata già affrontata e sviscerata in precedenza e non necessita di essere riveduta. Risulta diverso, invece, il discorso relativo all'azione di parlare, la cui dinamica è rappresentata nel diagramma di sequenza in \autoref{speak-sequence-diagram}.
+Ogni giocatore interagisce costantemente con il \emph{game environment}, considerato come un'entità attiva, sia per quanto riguarda le azioni relative al tavolo da gioco (come consultazione della mano corrente, giocata di una carta, \dots), sia per quanto riguarda la trasmissione delle informazioni quando un giocatore parla. L'interazione tra il tavolo e gli altri componenti del sistema è stata già affrontata e sviscerata in precedenza e non necessita di essere riveduta. Risulta diverso, invece, il discorso relativo all'azione di parlare, la cui dinamica è rappresentata nel diagramma di sequenza in \autoref{speak-sequence-diagram}.
 
 \begin{figure}[H]
 	\hspace*{-0.85in}
 	\centering
 	\includegraphics[width=180mm]{./img/speak_sequence_diagram.png}
-	\caption{Diagramma di sequenza che mette in luce l'interazione tra i giocatori e il \emph{game environment}. \emph{Player1} è il giocatore di mano e avvia l'azione di parlare in modo da ricevere un'indicazione dal compagno \emph{player3}. Il \emph{game environment} media la comunicazione ed il flusso di informazioni che da esso giunge ai giocatori è rappresentato, con abuso di notazione, tramite delle frecce tratteggiate.}
+	\caption{Diagramma di sequenza che mette in luce l'interazione tra i giocatori e il \emph{game environment}. \emph{Player1} è il giocatore di mano e avvia l'azione di parlare in modo da ricevere un'indicazione dal compagno \emph{player3}. Il \emph{game environment} media la comunicazione ed il flusso di informazioni che da esso giunge ai giocatori è rappresentato, con abuso di notazione, tramite delle frecce tratteggiate. \label{speak-sequence-diagram}}
 \end{figure}
 
 
 \section{Studio di fattibilità}
-\subsection{Componenti}
-Tutti i componenti, ad esclusione del tavolo da gioco, sono stati identificati come entità attive. Le soluzioni più consone per la modellazione di tali componenti ricadono nell'utilizzo degli attori o degli agenti. Infatti, queste astrazioni si basano sul fatto che ogni componente sia contraddistinto da un proprio flusso di controllo (logico o fisico) e risultano quindi ideali per l'implementazione di giocatori, mazziere e arbitro.
-
-Il tavolo da gioco è un componente passivo con il quale è possibile interagire tramite chiamate ai metodi che esso metterà a disposizione.
-
-\subsection{Interazione}
-% Studiare la fattiilità delle comunicazioni/interazioni, concludendo che l'utilizzo di uno spazio di tuple è la soluzione migliore.
-Come espresso in precedenza, i requisiti non pongono vincoli sulle modalità di interazione dei componenti. Segue uno studio sulle possibili strategie adottabili per far fronte a tale questione.
-
+In questa sezione verranno anticipate ed analizzate le principali problematiche che potrebbero affliggere le successive fasi di sviluppo del sistema. Saranno proposte delle possibili soluzioni adottabili nella fase di progettazione. Nel sistema in esame l'unico aspetto che necessita di uno studio di fattibilità è quello relativo all'interazione tra i componenti.
+\subsection{Interazione tra i componenti}
+Sono state individuate le principali modalità di interazione tra i componenti, analizzate di seguito.
 \begin{description}
-	\item[Scambio di messaggi]:
+	\item[Scambio di messaggi]: dato che tutti i componenti sono stati definiti come entità attive, la scelta più immediata consiste in un approccio a scambio di messaggi. Questa tipologia di comunicazione è nativamente supportata dalle entità attive come attori e agenti, oltre che supportata dalla maggior parte dei linguaggi di comunicazione. Un ulteriore vantaggio è dato dal fatto che la comunicazione è diretta (senza mediatori), il che rende lo scambio di informazioni più veloce. Questo approccio, però, implica che ogni entità conosca il riferimento di tutte le entità con le quali vuole iniziare una comunicazione.
+	\item[Pattern publish/subscribe]: rispetto allo scambio di messaggi, non vi è la necessità che il mittente conosca il riferimento del destinatario. Infatti, nella maggior parte dei casi, questo approccio mette a disposizione un \emph{broker} che funge da intermediario della comunicazione, garantendo scalabilità e disaccoppiamento tra i componenti, a costo di un \emph{delay} provocato dal broker stesso.
+	\item[Spazio di tuple]: oltre alla memorizzazione dei dati, fornisce anche meccanismi avanzati per la coordinazione. Utilizzando uno spazio di tuple, non è più necessario che i componenti debbano essere reattivi alla ricezione di messaggi e alle notifiche emesse da un eventuale broker. Le entità, in questo modo, sono completamente proattive e decideranno di recuperare informazioni dallo spazio di tuple nel momento più opportuno.
 \end{description}
 
 \section{Design architetturale} \label{design}
