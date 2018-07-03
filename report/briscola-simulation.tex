@@ -177,7 +177,14 @@ Le mani successive sono molto simili alla prima, anche se presentano una meccani
 \end{itemize}
 La seconda opzione implica una rivisitazione del modello del sistema abbozzato fino ad ora, ma garantisce un grado di disaccoppiamento tra i giocatori. In questo caso, una nozione di \emph{situatedness} si rivela determinante per il sistema. Ogni giocatore risulta situato in un ambiente di gioco, nel quale può consultare le carte che si trovano sul tavolo ed è in grado di recepire tutte le informazioni emesse dagli altri giocatori. In questo contesto, l'ambiente di gioco deve necessariamente essere considerato come un'astrazione di primo ordine, attraverso l'introduzione nel sistema di un nuovo componente, il \emph{game environment}. Esso include al suo interno anche il tavolo da gioco, che non è altro che una astrazione attraverso la quale ogni giocatore interagisce con l'ambiente, ricevendo da essa delle informazioni che influiscono sul proprio comportamento e agendo in modo da cambiare lo stato del mondo corrente. 
 
-Ogni giocatore interagisce costantemente con il \emph{game environment}, sia per quanto riguarda le azioni relative al tavolo da gioco (come consultazione della mano corrente, giocata di una carta, \dots), sia per quanto riguarda la trasmissione delle informazioni quando un giocatore parla. L'interazione tra il tavolo e gli altri componenti del sistema è stata già affrontata e sviscerata in precedenza e non necessita di essere riveduta. Risulta diverso, invece, il discorso relativo all'azione di parlare, la cui dinamica è rappresentata nel diagramma di sequenza in \autoref{}.
+Ogni giocatore interagisce costantemente con il \emph{game environment}, sia per quanto riguarda le azioni relative al tavolo da gioco (come consultazione della mano corrente, giocata di una carta, \dots), sia per quanto riguarda la trasmissione delle informazioni quando un giocatore parla. L'interazione tra il tavolo e gli altri componenti del sistema è stata già affrontata e sviscerata in precedenza e non necessita di essere riveduta. Risulta diverso, invece, il discorso relativo all'azione di parlare, la cui dinamica è rappresentata nel diagramma di sequenza in \autoref{speak-sequence-diagram}.
+
+\begin{figure}[H]
+	\hspace*{-0.85in}
+	\centering
+	\includegraphics[width=180mm]{./img/speak_sequence_diagram.png}
+	\caption{Diagramma di sequenza che mette in luce l'interazione tra i giocatori e il \emph{game environment}. \emph{Player1} è il giocatore di mano e avvia l'azione di parlare in modo da ricevere un'indicazione dal compagno \emph{player3}. Il \emph{game environment} media la comunicazione ed il flusso di informazioni che da esso giunge ai giocatori è rappresentato, con abuso di notazione, tramite delle frecce tratteggiate.}
+\end{figure}
 
 
 \section{Studio di fattibilità}
