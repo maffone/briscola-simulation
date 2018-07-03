@@ -150,7 +150,7 @@ Di seguito sono riportati due diagrammi a stati dai quali è possibile evincere 
 Consultando i requisiti, è facile notare che l'interazione tra i componenti del sistema costituisce il punto focale del progetto, se non quello più delicato e complesso. Siccome dai requisiti stessi non è possibile evincere un schema di interazione, è necessaria un'analisi nel dettaglio per determinare lo schema migliore, effettuato nella prossima sezione.  
 
 \section{Analisi del problema} \label{problem-analysis}
-Il modello del dominio, individuato in \autoref{domain-model}, non risulta adeguatamente sviluppato per procedere alla fase di progettazione del sistema. I componenti individuati non sono sufficienti per un completo svolgimento di una partita. Un'importante funzionalità del sistema consiste nell'assegnamento di ogni presa al giocatore vincente, e nel conseguente conteggio finale dei punti accumulati dalle due squadre. Tale funzionalità non è ricoperta da nessuno dei componenti individuati. L'unico di essi che concettualmente potrebbe svolgere un tale compito è il tavolo da gioco. Le funzionalità espresse in precedenza implicano che il componente che ne è responsabile sia un'entità attiva con un proprio flusso di controllo. Il tavolo, modellato in precedenza come entità passiva, non risulta adeguato a svolgere tali mansioni. Perciò si rende necessaria l'introduzione di un nuovo componente, ovvero \emph{arbitro}.
+Il modello del dominio, individuato in \autoref{domain-model}, non risulta adeguatamente sviluppato per procedere alla fase di progettazione del sistema. I componenti individuati non sono sufficienti per un completo svolgimento di una partita. Un'importante funzionalità del sistema consiste nell'assegnamento di ogni presa al giocatore vincente, nel conseguente conteggio finale dei punti accumulati dalle due squadre e nella proclamazione della squadra vincitrice. Tale funzionalità non è ricoperta da nessuno dei componenti individuati. L'unico di essi che concettualmente potrebbe svolgere un tale compito è il tavolo da gioco. Le funzionalità espresse in precedenza implicano che il componente che ne è responsabile sia un'entità attiva con un proprio flusso di controllo. Il tavolo, modellato in precedenza come entità passiva, non risulta adeguato a svolgere tali mansioni. Perciò si rende necessaria l'introduzione di un nuovo componente, ovvero \emph{arbitro}.
 
 Inoltre, dai requisiti non è chiaro in che modo le entità del sistema possano coordinarsi tra loro durante lo svolgimento di una partita. In particolare, non è specificata la modalità tramite la quale un giocatore sappia qual è il momento adatto per effettuare la sua giocata in una determinata mano. Allo stesso modo, non è indicato come il mazziere venga a conoscenza del momento in cui si conclude la fase di assegnazione della mano, per poi procedere alla distribuzione delle carte. Questa problematica potrebbe essere risolta in diversi modi:
 \begin{itemize}
@@ -187,17 +187,40 @@ Ogni giocatore interagisce costantemente con il \emph{game environment}, conside
 \end{figure}
 
 
-\section{Studio di fattibilità}
+\section{Studio di fattibilità} \label{feasibility-study}
 In questa sezione verranno anticipate ed analizzate le principali problematiche che potrebbero affliggere le successive fasi di sviluppo del sistema. Saranno proposte delle possibili soluzioni adottabili nella fase di progettazione. Nel sistema in esame l'unico aspetto che necessita di uno studio di fattibilità è quello relativo all'interazione tra i componenti.
-\subsection{Interazione tra i componenti}
+\subsection{Interazione tra i componenti} \label{interactions}
 Sono state individuate le principali modalità di interazione tra i componenti, analizzate di seguito.
 \begin{description}
 	\item[Scambio di messaggi]: dato che tutti i componenti sono stati definiti come entità attive, la scelta più immediata consiste in un approccio a scambio di messaggi. Questa tipologia di comunicazione è nativamente supportata dalle entità attive come attori e agenti, oltre che supportata dalla maggior parte dei linguaggi di comunicazione. Un ulteriore vantaggio è dato dal fatto che la comunicazione è diretta (senza mediatori), il che rende lo scambio di informazioni più veloce. Questo approccio, però, implica che ogni entità conosca il riferimento di tutte le entità con le quali vuole iniziare una comunicazione.
 	\item[Pattern publish/subscribe]: rispetto allo scambio di messaggi, non vi è la necessità che il mittente conosca il riferimento del destinatario. Infatti, nella maggior parte dei casi, questo approccio mette a disposizione un \emph{broker} che funge da intermediario della comunicazione, garantendo scalabilità e disaccoppiamento tra i componenti, a costo di un \emph{delay} provocato dal broker stesso.
 	\item[Spazio di tuple]: oltre alla memorizzazione dei dati, fornisce anche meccanismi avanzati per la coordinazione. Utilizzando uno spazio di tuple, non è più necessario che i componenti debbano essere reattivi alla ricezione di messaggi e alle notifiche emesse da un eventuale broker. Le entità, in questo modo, sono completamente proattive e decideranno di recuperare informazioni dallo spazio di tuple nel momento più opportuno.
 \end{description}
+Nel secondo e nel terzo approccio è prevista la presenza di un componente in grado di mediare la comunicazione (broker o spazio di tuple). Tale componente potrebbe essere una nuova entità (esterna al sistema attuale) o coincidere con il \emph{game environment}.
 
-\section{Design architetturale} \label{design}
+\section{Progettazione} \label{general-design}
+In questa sezione verranno discusse le scelte progettuali effettuate e verrà proposta l'architettura generale del sistema.
+
+\subsection{Scelte progettuali}
+L'architettura del sistema sarà costruita prendendo come riferimento quanto proposto in \autoref{problem-analysis} e valutando i possibili approcci implementativi proposti in \autoref{feasibility-study}. I giocatori, il mazziere e l'arbitro sono sviluppati come agenti piuttosto che attori, in modo da porre l'enfasi sull'autonomia e la proattività di tali componenti.
+
+Per la definizione dell'interazione dei componenti del sistema è scelto un approccio ibrido tra le tipologie proposte in \autoref{interactions}. Il \emph{game environment} è realizzato come uno spazio di tuple, sia per i vantaggi illustrati in precedenza, sia per il livello di astrazione che questo approccio presenta, che risulta essere vicino alla realtà. Ad esempio, in una partita reale una carta viene giocata appoggiandola sul tavolo e da quel momento risulta visibile a tutti i giocatori; allo stesso modo, una tupla inserita nello spazio di tuple può essere vista e consultata dagli agenti in ogni momento, fino a che non viene rimossa. Inoltre, l'azione di parlare risulta comodamente effettuabile attraverso uno spazio di tuple, semplicemente rappresentando domande e risposte come delle tuple, a cui tutti i giocatori possono accedere. Come diretta conseguenza di questa scelta, chiunque debba comunicare con il \emph{game environment} lo farà utilizzando le primitive fornite dal modello di coordinazione.
+
+Tuttavia lo spazio di tuple non è la scelta migliore per alcuni scambi di informazioni tra i componenti. Le interazioni che non riguardano direttamente il \emph{game environment} potrebbero anch'esse essere mediate dallo spazio di tuple, oppure effettuate in maniera separata. Per salvaguardare l'integrità del modello e per attenersi il più possibile allo svolgimento reale di una partita del gioco, si decide di effettuare queste interazioni al di fuori dello spazio di tuple. Ad esempio, alcune comunicazioni non interessano direttamente i giocatori (come l'interazione fra arbitro e mazziere), mentre altre devono rimanere private ad un singolo giocatore (come la distribuzione delle carte). Per tutte queste interazioni si sceglie di adottare un approccio a scambio di messaggi, siccome ognuna di esse è finalizzata allo scambio di informazioni tra due sole entità.
+L'architettura completa del sistema è illustrata in \autoref{general-architecture}.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{./img/general_architecture.png}
+	\caption{Architettura generale del sistema. Per motivi di chiarezza grafica è rappresentato un solo giocatore. I giocatori interagiscono  con lo spazio di tuple attraverso le primitive \emph{out}, che consente di aggiungere una tupla all'interno dello spazio, e \emph{in}, che consente di interrogare il tuple space sulla presenza di una tupla e leggerla. Le interazioni tra agenti non mediate dal \emph{game environment} avvengono tramite scambio di messaggi.\label{general-architecture}}
+\end{figure}
+
+
+\subsection{Design di dettaglio} \label{design}
+
+\section{Implementazione} \label{implementation}
+
+\section{Conclusioni} \label{conclusions}
 
 \fancyhead{}
 \renewcommand{\headrulewidth}{0pt}
