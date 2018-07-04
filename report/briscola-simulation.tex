@@ -58,8 +58,11 @@
 \newpage
 \tableofcontents
 \newpage
-\section{Idea}
+\section{Introduzione}
 
+Questo documento è la relazione del progetto Briscola Simulation, realizzato per il corso di Sistemi Autonomi, erogato dalla facoltà di Ingegneria e Scienze Informatiche dell'Università di Bologna (A.A. 2017/2018). L'obiettivo del progetto è lo sviluppo di un sistema autonomo nel quale sia possibile simulare una partita di briscola a quattro giocatori. La relazione non mira ad essere considerata come una mera documentazione del software, ma piuttosto come una descrizione dell'intero processo di sviluppo che ha portato alla realizzazione dello stesso.
+
+Il processo di sviluppo adottato ha seguito una filosofia \emph{top-down}: è presente una prima fase di raccolta e analisi dei requisiti, seguita dalle fasi di analisi del problema e studio di fattibilità, nelle quali sono state esaminate le principali problematiche proponendo possibili soluzioni. Si passa poi ad una fase di progettazione, nella quale vengono definiti architettura del sistema e design di dettaglio dei singoli componenti. Infine, vengono stabilite le tecnologie da utilizzare per procedere poi all'implementazione del software.
 
 \section{Analisi dei requisiti} \label{requirements-analysis}
 
@@ -67,7 +70,7 @@ In questo sezione verranno elencati ed analizzati i requisiti, funzionali e non,
 
 \subsection{Requisiti}
 
-Lo scopo del progetto è quello di realizzare un sistema software in grado di simulare una partita di briscola a quattro giocatori. I giocatori dovranno sottostare al regolamento illustrato nella sezione \emph{\hyperref[briscola-rules]{regole del gioco}} fornita in appendice. Ognuno di essi dovrà cooperare con il proprio compagno al meglio delle proprie capacità per poter vincere la partita. Più nel dettaglio, i requisiti funzionali sono i seguenti:
+Lo scopo del progetto è quello di realizzare un sistema software in grado di simulare una partita di briscola a quattro giocatori. I giocatori dovranno sottostare al regolamento illustrato nella sezione \emph{\hyperref[briscola-rules]{regole del gioco}} fornita in appendice. Ognuno di essi dovrà cooperare con il proprio compagno al meglio delle proprie capacità per poter vincere la partita. Più nel dettaglio, i requisiti sono i seguenti:
 \begin{itemize}
 	\item Le squadre devono essere scelte a caso, così come il primo giocatore ad inizio partita.
 	\item Le carte del mazzo devono essere distribuite da una mazziere, seguendo l'ordine indicato nelle \emph{\hyperref[briscola-rules]{regole del gioco}} in appendice. Il mazziere, mano dopo mano, distribuirà carte fino ad esaurimento del mazzo.
