@@ -61,17 +61,17 @@
 \section{Idea}
 
 
-\section{Analisi dei requisiti}
+\section{Analisi dei requisiti} \label{requirements-analysis}
 
 In questo sezione verranno elencati ed analizzati i requisiti, funzionali e non, del sistema da realizzare. 
 
 \subsection{Requisiti}
 
-Lo scopo del progetto è quello di realizzare un sistema software in grado di simulare una partita di briscola a quattro giocatori. I giocatori dovranno sottostare al regolamento illustrato nella sezione  \emph{\hyperref[briscola-rules]{regole del gioco}} fornita in appendice. Ognuno di essi dovrà cooperare con il proprio compagno al meglio delle proprie capacità per poter vincere la partita. Più nel dettaglio, i requisiti funzionali sono i seguenti:
+Lo scopo del progetto è quello di realizzare un sistema software in grado di simulare una partita di briscola a quattro giocatori. I giocatori dovranno sottostare al regolamento illustrato nella sezione \emph{\hyperref[briscola-rules]{regole del gioco}} fornita in appendice. Ognuno di essi dovrà cooperare con il proprio compagno al meglio delle proprie capacità per poter vincere la partita. Più nel dettaglio, i requisiti funzionali sono i seguenti:
 \begin{itemize}
 	\item Le squadre devono essere scelte a caso, così come il primo giocatore ad inizio partita.
 	\item Le carte del mazzo devono essere distribuite da una mazziere, seguendo l'ordine indicato nelle \emph{\hyperref[briscola-rules]{regole del gioco}} in appendice. Il mazziere, mano dopo mano, distribuirà carte fino ad esaurimento del mazzo.
-	\item Un giocatore può iniziare a parlare con il compagno solamente quando è di mano ed è del primo della propria squadra a giocare per la mano corrente. Fa eccezione la prima mano, in cui non è consentito parlare.
+	\item Un giocatore può iniziare a parlare con il compagno solamente quando è di mano ed è il primo della propria squadra a giocare per la mano corrente. Fa eccezione la prima mano, in cui non è consentito parlare.
 	\item Quando un giocatore parla, tutti gli altri devono essere in grado di sentirlo. Inoltre, il compagno è sempre tenuto a rispondere.  Non sono ammessi \emph{bluff}: ogni giocatore, quando parla o risponde, è sempre obbligato a dire la verità.
 	\item Ogni giocatore deve avere come obiettivo quello di massimizzare il punteggio della propria squadra, e non quello individuale.
 	\item Ogni giocatore determina la propria giocata seguendo un propria logica interna, facendo affidamento su informazioni di varia natura. Tali informazioni sono costituite da:
@@ -94,8 +94,8 @@ Lo scopo del progetto è quello di realizzare un sistema software in grado di si
 	\item[Mano]: termine utilizzato per indicare un turno completo di gioco, in cui ogni giocatore gioca una carta a partire dal primo giocatore in senso antiorario. Il primo giocatore è colui che ha vinto l'ultima presa, ad eccezione del primo turno, dove viene scelto casualmente.
 	\item[Presa]: l'insieme delle quattro carte sul tavolo al termine di una mano, che verranno assegnate al giocare che ha calato la carta dominante. Per carta dominante s'intende quella specificata nel regolamento in appendice.
 	\item[Essere di mano]: un giocatore è di mano quando tocca a lui giocare una carta.
-	\item[Fascia di valore]: raggruppamento di carte sulla base del loro valore. Le fasce sono 3: \emph{carico} (3 e asso), \emph{figura} (re, cavallo e fante) e \emph{liscia} (7, 6, 5, 4, 2).
-	\item[Parlare]: scambio di informazioni tra due giocatori di una squadra. Il giocatore che \emph{parla} porrà una domanda al compagno, il quale potrà rispondere in maniera binaria (``sì'' o ``no''). Tale domanda è finalizzata all'acquisizione di informazioni relative alle carte del compagno. Ogni domanda può contenere l'indicazione di una fascia di valore, di un seme o di entrambi: chi la riceve, risponderà positivamente soltanto se possiede almeno carta conforme all'indicazione. Seguono due esempi di domande lecite:
+	\item[Fascia di valore]: raggruppamento di carte sulla base del loro valore. Le fasce sono tre: \emph{carico} (3 e asso), \emph{figura} (re, cavallo e fante) e \emph{liscia} (7, 6, 5, 4, 2).
+	\item[Parlare]: scambio di informazioni tra due giocatori di una squadra. Il giocatore che \emph{parla} pone una domanda al compagno, il quale può rispondere in maniera binaria (``sì'' o ``no''). Tale domanda è finalizzata all'acquisizione di informazioni relative alle carte del compagno. Ogni domanda può contenere l'indicazione di una fascia di valore, di un seme o di entrambi: chi la riceve, risponde positivamente soltanto se possiede almeno una carta conforme all'indicazione. Seguono due esempi di domande lecite:
 	\begin{itemize}
 		\item "Hai una \emph{figura} di \emph{bastoni}?"
 		\item "Hai una carta di \emph{denari}?"
@@ -104,7 +104,7 @@ Lo scopo del progetto è quello di realizzare un sistema software in grado di si
 	\item[Tavolo da gioco]: astrazione del tavolo fisico sul quale viene disputata la partita di briscola. Su di esso saranno posizionate le carte della mano corrente e la presa della mano precedente.
 \end{description}
 
-\subsection{Modello del dominio}
+\subsection{Modello del dominio} \label{domain-model}
 
 \subsubsection{Struttura}
 
@@ -115,7 +115,7 @@ Dai requisiti sopra elencati, è possibile individuare sei componenti all'intern
 	\item Un tavolo da gioco, necessario per giocare carte e tenere memoria dell'ultima presa. 
 \end{itemize}
 
-Siccome i giocatori sono entità autonome con un proprio stato interno ed una capacità di \emph{reasoning} necessaria alla scelta delle carte da giocare, viene naturale modellarli come agenti. Allo stesso modo, pur non avendo la stessa capacità di \emph{reasoning}, anche il mazziere è modellato come agente. Infine, vien naturale modellare il tavolo come un'entità passiva, finalizzata a mantenere lo stato dell'ultima mano e di quella corrente. 
+Siccome i giocatori sono entità autonome con un proprio stato interno ed una capacità di \emph{reasoning} necessaria alla scelta delle carte da giocare, viene naturale modellarli come entità attive. Allo stesso modo, pur non avendo la stessa capacità di \emph{reasoning}, anche il mazziere è modellato come entità attiva. Infine, vien naturale modellare il tavolo come un'entità passiva, finalizzata a mantenere lo stato dell'ultima mano e di quella corrente. 
 
 \subsubsection{Comportamento}
 
@@ -123,13 +123,13 @@ Di seguito è illustrato lo svolgimento di una partita, in modo da mettere in ev
 
 \begin{enumerate}
 	\item Il mazziere mischia il mazzo, distribuisce 3 carte ad ogni giocatore ed infine scopre una carta, il cui seme sarà la briscola per la partita corrente.
-	\item Il primo giocatore, scelto casualmente, gioca una carta calandola sul tavolo, seguito da i restanti giocatori in senso antiorario.
+	\item Il primo giocatore, scelto casualmente, gioca una carta calandola sul tavolo, seguito dai restanti giocatori in senso antiorario.
 	\item Quando tutte le quattro carte sono sul tavolo, queste vengono attribuite al giocatore vincente, che sarà il primo giocatore della prossima mano. A questo punto il mazziere distribuisce una carta ad ogni giocatore seguendo l'ordine della mano successiva, terminando così la mano corrente.
 	\item Nelle seguenti mani, si procederà allo stesso modo (passi 2 e 3), con la possibilità di parlare da parte dei primi due giocatori di mano.
 	\item Si procede fino all'esaurimento delle carte del mazzo e delle carte in mano ai giocatori. A questo punto, si procede al conteggio dei punti delle due squadre. Se una squadra ha totalizzato più di 60 punti è eletta vincitrice.
 \end{enumerate}
 
-Di seguito sono riportati due diagrammi a stati dai quali è possibile evincere, rispettivamente, comportamento dei giocatori e comportamento del mazziere.
+Di seguito sono riportati due diagrammi a stati dai quali è possibile evincere comportamento dei giocatori e comportamento del mazziere rispettivamente in \autoref{player-state-diagram} e in \autoref{dealer-state-diagram}.
 
 \begin{figure}[H]
 	\centering
@@ -150,20 +150,77 @@ Di seguito sono riportati due diagrammi a stati dai quali è possibile evincere,
 Consultando i requisiti, è facile notare che l'interazione tra i componenti del sistema costituisce il punto focale del progetto, se non quello più delicato e complesso. Siccome dai requisiti stessi non è possibile evincere un schema di interazione, è necessaria un'analisi nel dettaglio per determinare lo schema migliore, effettuato nella prossima sezione.  
 
 \section{Analisi del problema} \label{problem-analysis}
+Il modello del dominio, individuato in \autoref{domain-model}, non risulta adeguatamente sviluppato per procedere alla fase di progettazione del sistema. I componenti individuati non sono sufficienti per un completo svolgimento di una partita. Un'importante funzionalità del sistema consiste nell'assegnamento di ogni presa al giocatore vincente, nel conseguente conteggio finale dei punti accumulati dalle due squadre e nella proclamazione della squadra vincitrice. Tale funzionalità non è ricoperta da nessuno dei componenti individuati. L'unico di essi che concettualmente potrebbe svolgere un tale compito è il tavolo da gioco. Le funzionalità espresse in precedenza implicano che il componente che ne è responsabile sia un'entità attiva con un proprio flusso di controllo. Il tavolo, modellato in precedenza come entità passiva, non risulta adeguato a svolgere tali mansioni. Perciò si rende necessaria l'introduzione di un nuovo componente, ovvero \emph{arbitro}.
 
+Inoltre, dai requisiti non è chiaro in che modo le entità del sistema possano coordinarsi tra loro durante lo svolgimento di una partita. In particolare, non è specificata la modalità tramite la quale un giocatore sappia qual è il momento adatto per effettuare la sua giocata in una determinata mano. Allo stesso modo, non è indicato come il mazziere venga a conoscenza del momento in cui si conclude la fase di assegnazione della mano, per poi procedere alla distribuzione delle carte. Questa problematica potrebbe essere risolta in diversi modi:
+\begin{itemize}
+	\item \textbf{Introduzione di un orchestratore}: la coordinazione tra le entità del sistema potrebbe essere garantita dall'introduzione di un nuovo componente adibito.
+	\item \textbf{Assegnamento del compito di orchestratore all'arbitro}: data la concezione di arbitro, non è difficile immaginare che possa essere proprio tale componente a fornire anche funzionalità di coordinazione di una partita.
+	\item \textbf{Coordinazione tramite le informazioni sul tavolo}: siccome il tavolo è l'entità sulla quale si svolge la partita, esso potrebbe essere considerato come una sorgente di informazioni ed eventi, utilizzabili da giocatori, mazziere e arbitro per coordinarsi.
+\end{itemize}
+Fra le opzioni elencate, è sembrato più appropriato mettere in atto la seconda, attribuendo all'arbitro il ruolo di orchestratore della partita.
+
+Sulla base di quanto discusso, in \autoref{general-sequence-diagram} è illustrato un diagramma di sequenza, in modo da mettere in evidenza l'interazione tra i componenti del sistema.
 
 
 \begin{figure}[H]
 	\hspace*{-0.7in}
 	\centering
 	\includegraphics[width=180mm]{./img/general_sequence_diagram.png}
-	\caption{Diagramma di sequenza del sistema.  \label{general-sequence-diagram}}
+	\caption{Diagramma di sequenza del sistema per il primo turno. Per motivi grafici non sono stati inclusi nella rappresentazione tutti i giocatori di una partita, ma solamente uno di essi. \label{general-sequence-diagram}}
 \end{figure}
 
-\subsection{Studio di fattibilità}
-% analizzare i singoli componenti (cosa sono i giocatori? e il tavolo?). Studiare la fattiilità delle comunicazioni/interazioni, concludendo che l'utilizzo di uno spazio di tuple è la soluzione migliore. chi conta i punti e dice chi ha vinto una mano?
+Le mani successive sono molto simili alla prima, anche se presentano una meccanica aggiuntiva: i primi giocatori di ogni squadra hanno la possibilità di parlare con il compagno. La dinamica che descrive lo svolgimento di tale azione non è stata approfondita in maniera adeguata nella fase di analisi dei requisiti in \autoref{requirements-analysis}. Essa può essere modellata attraverso due principali schemi di interazione:
+\begin{itemize}
+	\item \textbf{Comunicazione diretta}: la soluzione più semplice consiste nel fare in modo che il giocatore che parla comunichi in modo diretto la propria domanda sia al compagno di squadra, sia ai giocatori avversari. La risposta, allo stesso modo, deve essere trasmessa a tutti i giocatori.
+	\item \textbf{Comunicazione mediata}: in questo caso si considera l'etere come lo spazio nel quale avviene la comunicazione. Un giocatore quando parla trasmette le proprie informazioni nell'ambiente in cui si svolge la partita. La domanda posta dal giocatore è rivolta al compagno di gioco, ma può essere recepita da tutte le entità situate nell'ambiente circostante. Solo il compagno sarà responsabile di rispondere alla domanda, propagando l'informazione sullo spazio comune tra i giocatori.
+\end{itemize}
+La seconda opzione implica una rivisitazione del modello del sistema abbozzato fino ad ora, ma garantisce un grado di disaccoppiamento tra i giocatori. In questo caso, una nozione di \emph{situatedness} si rivela determinante per il sistema. Ogni giocatore risulta situato in un ambiente di gioco, nel quale può consultare le carte che si trovano sul tavolo ed è in grado di recepire tutte le informazioni emesse dagli altri giocatori. In questo contesto, l'ambiente di gioco deve necessariamente essere considerato come un'astrazione di primo ordine, attraverso l'introduzione nel sistema di un nuovo componente, il \emph{game environment}. Esso include al suo interno anche il tavolo da gioco, che non è altro che una astrazione attraverso la quale ogni giocatore interagisce con l'ambiente, ricevendo da essa delle informazioni che influiscono sul proprio comportamento e agendo in modo da cambiare lo stato del mondo corrente. 
 
-\section{Design architetturale} \label{design}
+Ogni giocatore interagisce costantemente con il \emph{game environment}, considerato come un'entità attiva, sia per quanto riguarda le azioni relative al tavolo da gioco (come consultazione della mano corrente, giocata di una carta, \dots), sia per quanto riguarda la trasmissione delle informazioni quando un giocatore parla. L'interazione tra il tavolo e gli altri componenti del sistema è stata già affrontata e sviscerata in precedenza e non necessita di essere riveduta. Risulta diverso, invece, il discorso relativo all'azione di parlare, la cui dinamica è rappresentata nel diagramma di sequenza in \autoref{speak-sequence-diagram}.
+
+\begin{figure}[H]
+	\hspace*{-0.85in}
+	\centering
+	\includegraphics[width=180mm]{./img/speak_sequence_diagram.png}
+	\caption{Diagramma di sequenza che mette in luce l'interazione tra i giocatori e il \emph{game environment}. \emph{Player1} è il giocatore di mano e avvia l'azione di parlare in modo da ricevere un'indicazione dal compagno \emph{player3}. Il \emph{game environment} media la comunicazione ed il flusso di informazioni che da esso giunge ai giocatori è rappresentato, con abuso di notazione, tramite delle frecce tratteggiate. \label{speak-sequence-diagram}}
+\end{figure}
+
+
+\section{Studio di fattibilità} \label{feasibility-study}
+In questa sezione verranno anticipate ed analizzate le principali problematiche che potrebbero affliggere le successive fasi di sviluppo del sistema. Saranno proposte delle possibili soluzioni adottabili nella fase di progettazione. Nel sistema in esame l'unico aspetto che necessita di uno studio di fattibilità è quello relativo all'interazione tra i componenti.
+\subsection{Interazione tra i componenti} \label{interactions}
+Sono state individuate le principali modalità di interazione tra i componenti, analizzate di seguito.
+\begin{description}
+	\item[Scambio di messaggi]: dato che tutti i componenti sono stati definiti come entità attive, la scelta più immediata consiste in un approccio a scambio di messaggi. Questa tipologia di comunicazione è nativamente supportata dalle entità attive come attori e agenti, oltre che supportata dalla maggior parte dei linguaggi di comunicazione. Un ulteriore vantaggio è dato dal fatto che la comunicazione è diretta (senza mediatori), il che rende lo scambio di informazioni più veloce. Questo approccio, però, implica che ogni entità conosca il riferimento di tutte le entità con le quali vuole iniziare una comunicazione.
+	\item[Pattern publish/subscribe]: rispetto allo scambio di messaggi, non vi è la necessità che il mittente conosca il riferimento del destinatario. Infatti, nella maggior parte dei casi, questo approccio mette a disposizione un \emph{broker} che funge da intermediario della comunicazione, garantendo scalabilità e disaccoppiamento tra i componenti, a costo di un \emph{delay} provocato dal broker stesso.
+	\item[Spazio di tuple]: oltre alla memorizzazione dei dati, fornisce anche meccanismi avanzati per la coordinazione. Utilizzando uno spazio di tuple, non è più necessario che i componenti debbano essere reattivi alla ricezione di messaggi e alle notifiche emesse da un eventuale broker. Le entità, in questo modo, sono completamente proattive e decideranno di recuperare informazioni dallo spazio di tuple nel momento più opportuno.
+\end{description}
+Nel secondo e nel terzo approccio è prevista la presenza di un componente in grado di mediare la comunicazione (broker o spazio di tuple). Tale componente potrebbe essere una nuova entità (esterna al sistema attuale) o coincidere con il \emph{game environment}.
+
+\section{Progettazione} \label{general-design}
+In questa sezione verranno discusse le scelte progettuali effettuate e verrà proposta l'architettura generale del sistema.
+
+\subsection{Scelte progettuali}
+L'architettura del sistema sarà costruita prendendo come riferimento quanto proposto in \autoref{problem-analysis} e valutando i possibili approcci implementativi proposti in \autoref{feasibility-study}. I giocatori, il mazziere e l'arbitro sono sviluppati come agenti piuttosto che attori, in modo da porre l'enfasi sull'autonomia e la proattività di tali componenti.
+
+Per la definizione dell'interazione dei componenti del sistema è scelto un approccio ibrido tra le tipologie proposte in \autoref{interactions}. Il \emph{game environment} è realizzato come uno spazio di tuple, sia per i vantaggi illustrati in precedenza, sia per il livello di astrazione che questo approccio presenta, che risulta essere vicino alla realtà. Ad esempio, in una partita reale una carta viene giocata appoggiandola sul tavolo e da quel momento risulta visibile a tutti i giocatori; allo stesso modo, una tupla inserita nello spazio di tuple può essere vista e consultata dagli agenti in ogni momento, fino a che non viene rimossa. Inoltre, l'azione di parlare risulta comodamente effettuabile attraverso uno spazio di tuple, semplicemente rappresentando domande e risposte come delle tuple, a cui tutti i giocatori possono accedere. Come diretta conseguenza di questa scelta, chiunque debba comunicare con il \emph{game environment} lo farà utilizzando le primitive fornite dal modello di coordinazione.
+
+Tuttavia lo spazio di tuple non è la scelta migliore per alcuni scambi di informazioni tra i componenti. Le interazioni che non riguardano direttamente il \emph{game environment} potrebbero anch'esse essere mediate dallo spazio di tuple, oppure effettuate in maniera separata. Per salvaguardare l'integrità del modello e per attenersi il più possibile allo svolgimento reale di una partita del gioco, si decide di effettuare queste interazioni al di fuori dello spazio di tuple. Ad esempio, alcune comunicazioni non interessano direttamente i giocatori (come l'interazione fra arbitro e mazziere), mentre altre devono rimanere private ad un singolo giocatore (come la distribuzione delle carte). Per tutte queste interazioni si sceglie di adottare un approccio a scambio di messaggi, siccome ognuna di esse è finalizzata allo scambio di informazioni tra due sole entità.
+L'architettura completa del sistema è illustrata in \autoref{general-architecture}.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{./img/general_architecture.png}
+	\caption{Architettura generale del sistema. Per motivi di chiarezza grafica è rappresentato un solo giocatore. I giocatori interagiscono  con lo spazio di tuple attraverso le primitive \emph{out}, che consente di aggiungere una tupla all'interno dello spazio, e \emph{in}, che consente di interrogare il tuple space sulla presenza di una tupla e leggerla. Le interazioni tra agenti non mediate dal \emph{game environment} avvengono tramite scambio di messaggi.\label{general-architecture}}
+\end{figure}
+
+
+\subsection{Design di dettaglio} \label{design}
+
+\section{Implementazione} \label{implementation}
+
+\section{Conclusioni} \label{conclusions}
 
 \fancyhead{}
 \renewcommand{\headrulewidth}{0pt}
