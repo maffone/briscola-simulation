@@ -1,7 +1,10 @@
-MAS briscolaSimulation {
+MAS helloWorld {
 
 	agents:
 		sample_agent 
+		agentArchClass it.unibo.tucson4jason.architecture.T4JnArchImpl #1;
+		
+		sample_agent2
 		agentArchClass it.unibo.tucson4jason.architecture.T4JnArchImpl #1;
 
 	classpath:
