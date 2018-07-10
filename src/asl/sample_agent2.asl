@@ -3,7 +3,10 @@
 /* Plans */
 
 +!start : true <- .print("hello world2.");
-				  t4jn.api.in("default", "127.0.0.1", "20504", test(X), In0);
-				  t4js.api.getResult(In0, Res);
-				  t4js.api.getArg(Res, 0, Ciccia);
-				  .print(Ciccia).
+				  !getTuple.
+				  
+				  
++!getTuple <- t4jn.api.in("default", "127.0.0.1", "20504", hello(world), In0);
+	          t4jn.api.getResult(In0, Res0);
+			  t4jn.api.getArg(Res0, 0, Arg0);
+			  .print(Arg0).

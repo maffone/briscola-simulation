@@ -1,10 +1,18 @@
 MAS briscolaSimulation {
 
 	agents:
-		sample_agent 
-		agentArchClass it.unibo.tucson4jason.architecture.T4JnArchImpl #1;
-		sample_agent2
-		agentArchClass it.unibo.tucson4jason.architecture.T4JnArchImpl #1;
+		player1 player 
+		agentArchClass it.unibo.tucson4jason.architecture.T4JnArchImpl;
+		player2 player 
+		agentArchClass it.unibo.tucson4jason.architecture.T4JnArchImpl;
+		player3 player 
+		agentArchClass it.unibo.tucson4jason.architecture.T4JnArchImpl;
+		player4 player 
+		agentArchClass it.unibo.tucson4jason.architecture.T4JnArchImpl;
+		dealer
+		agentArchClass it.unibo.tucson4jason.architecture.T4JnArchImpl;
+		referee
+		agentArchClass it.unibo.tucson4jason.architecture.T4JnArchImpl;
 
 	classpath:
 		"../libs/2p.jar";		
