@@ -1,0 +1,6 @@
+Launch a local TuCSoN node: java -cp libs/tucson.jar:libs/2p.jar alice.tucson.service.TucsonNodeService
+
+Launch the CLI on that node: java -cp libs/tucson.jar:libs/2p.jar alice.tucson.service.tools.CommandLineInterpreter
+
+Launch the Inspector tool: java -cp libs/tucson.jar:libs/2p.jar alice.tucson.introspection.tools.InspectorGUI
+
