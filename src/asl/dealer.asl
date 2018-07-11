@@ -68,7 +68,8 @@
 	.print("Distributing cards to players");
 	for ( .member(PLAYER, PLAYERS) ) {
 		!distribute_cards_to_player(PLAYER, CARDS_NUMBER);
-	}.
+	};
+	-order(PLAYER).
 
 +!distribute_cards_to_player(PLAYER, CARDS_NUMBER): CARDS_NUMBER < 1 <-
 	true.
