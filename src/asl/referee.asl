@@ -4,12 +4,12 @@
 
 players([]).
 init_players([]).
-teams(["red", "blue", "red", "blue"]).
+teams([red, blue, red, blue]).
 dealer_addr(dealer).
 turn_order([]).
 cards_played([]).
-team_points("blue", 0).
-team_points("red", 0).
+team_points(blue, 0).
+team_points(red, 0).
 card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8,2), value(9,3), value(10,4), value(3,10), value(1,11)]).
 
 /* Initial goals */
