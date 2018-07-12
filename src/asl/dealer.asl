@@ -35,10 +35,10 @@
 	!add_cards.
 	
 +!add_cards: deck(_) <-
-	!add_seed(1,10,"denari");
-	!add_seed(1,10,"bastoni");
-	!add_seed(1,10,"spade");
-	!add_seed(1,10,"coppe").
+	!add_seed(1,10,denari);
+	!add_seed(1,10,bastoni);
+	!add_seed(1,10,spade);
+	!add_seed(1,10,coppe).
 	
 +!add_seed(MIN, MAX, SEED): MIN > MAX <-
 	true.
