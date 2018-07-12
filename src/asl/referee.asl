@@ -23,6 +23,7 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     !add_player(player(NAME, SENDER)).
     
 +card_distribution_done : true <- 
+    -card_distribution_done;
     !start_hand;
     !play_hand.
     
@@ -94,8 +95,8 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     .print("[referee] - the winner scores ", POINTS, " points");
     !assign_points(WINNER, POINTS);
     !set_new_first_player(WINNER);
-    ?turn(N);
-    -+turn(N+1);
+    ?turns(N);
+    -+turns(N+1);
     !new_turn.
     
 +!calculate_winner(WINNER) : cards_played(CP) & .length(CP, LEN) & LEN == 4 <-
@@ -154,14 +155,15 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
         }   
     }.
     
-+!new_turn : turn(N) & N > 10 <- 
++!new_turn : turns(N) & N > 10 <- 
     .print("[referee] - game ended :(");
     !end_game.
-+!new_turn : turn(N) & N <= 10 <-
++!new_turn : turns(N) & N <= 10 <-
     .print("[referee] - begin a new turn, contact the dealer...");
     .wait(5000);
     ?dealer_addr(DEALER);
     ?turn_order(TO);
+    .print(TO);
     .send(DEALER, tell, give_cards(order(TO))).
     
 +!end_game : true <- 
