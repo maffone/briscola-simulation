@@ -54,8 +54,9 @@ card_seed_match(_, "any").
 	t4jn.api.rd("default", "127.0.0.1", "20504", ask_companion(team(MY_TEAM), _, _), RD_Q);
 	.print("Question received.");
 	t4jn.api.getResult(RD_Q, RESULT);
-	t4jn.api.getArg(RESULT, 1, QUESTION_RANGE);
-	t4jn.api.getArg(RESULT, 2, QUESTION_SEED).
+	t4jn.api.getArg(RESULT, 2, ASK);
+	t4jn.api.getArg(ASK, 0, QUESTION_RANGE);
+	t4jn.api.getArg(ASK, 1, QUESTION_SEED).
 	
 +!process_question(QUESTION_RANGE, QUESTION_SEED) <-
 	.print("Processing question...");
@@ -66,9 +67,10 @@ card_seed_match(_, "any").
 		}
 	}.
 
-+!answer_question: answer_companion(RESPONSE) <-
++!answer_question: team_name(MY_TEAM) & answer_companion(RESPONSE) <-
 	.print("Sending response.");
-	t4jn.api.out("default", "127.0.0.1", "20504", answer_companion(RESPONSE), OUT_A);
+	.my_name(ME);
+	t4jn.api.out("default", "127.0.0.1", "20504", answer_companion(team(MY_TEAM), from(ME), RESPONSE), OUT_A);
 	-answer_companion(_).
 	
 +!play_turn: .count(card(VALUE, SEED), N) & N >= 1 <-
