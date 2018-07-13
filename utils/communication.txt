@@ -27,28 +27,48 @@ your_turn(can_speak(true)).
 //Card played tuple from player to tuple space
 card_played(card(5, "coppe"), from(player1), team("red")).
 
+//Tuple from referee to tuple space to reset the current hand
+last_hand([
+	card_played(card(5, "coppe"), from(player1), team("red")), 
+	card_played(card(9, "coppe"), from(player2), team("blue")),
+	card_played(card(4, "spade"), from(player3), team("red")),
+	card_played(card(2, "bastoni"), from(player4), team("blue"))
+]).
+
+//Reset Reaction
+out_s(
+	out(last_hand(_)),
+	(operation,invocation),
+	(
+		in_all(last_hand(_)),
+		in_all(card_played(_,_,_))
+	)
+).
+
+//Reset Reaction (use this to easily execute in command line)
+out_s(out(last_hand(_)),(operation,invocation),(in_all(last_hand(_)),in_all(card_played(_,_,_)))).
 
 /*** CONVERSATION ***/
 
 //Answer reaction (extended form): 
 out_s(
-	out(answer_companion(team(T),from(AP),A)), 
+	out(answer_companion(team(T),from(AP),A,seq(SN))), 
 	(operation,completion),
 	(
-		in(ask_companion(team(T),from(QP),ask(QR,QS))),
-		in(answer_companion(team(T),from(AP),A)),
-		out(conversation(team(T),from(QP),to(AP),ask(QR, QS),answer(A)))
+		in(ask_companion(team(T),from(QP),ask(QR,QS),seq(SN))),
+		in(answer_companion(team(T),from(AP),A,seq(SN))),
+		out(conversation(team(T),from(QP),to(AP),ask(QR, QS),answer(A),seq(SN)))
 	)
 ).
 
 //Answer Reaction (use this to easily execute in command line)
-out_s(out(answer_companion(team(T),from(AP),A)),(operation,completion),(in(ask_companion(team(T),from(QP),ask(QR,QS))),in(answer_companion(team(T),from(AP),A)),out(conversation(team(T),from(QP),to(AP),ask(QR, QS),answer(A))))).
+out_s(out(answer_companion(team(T),from(AP),A,seq(SN))),(operation,completion),(in(ask_companion(team(T),from(QP),ask(QR,QS),seq(SN))),in(answer_companion(team(T),from(AP),A,seq(SN))),out(conversation(team(T),from(QP),to(AP),ask(QR, QS),answer(A),seq(SN))))).
 
 //Ask tuple from player to tuple space:
-ask_companion(team("red"), from(player2), ask("carico", "coppe")).
+ask_companion(team("red"), from(player2), ask("carico", "coppe"), seq(2)).
 
 //Answer tuple from player to tuple space:
-answer_companion(team("red"), from(player1), true).
+answer_companion(team("red"), from(player1), true, seq(2)).
 
 
 
