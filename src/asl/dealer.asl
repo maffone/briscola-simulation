@@ -57,15 +57,17 @@
 
 +!shuffle_deck: deck(CARDS) <-
 	.print("Shuffling deck.");
+	.wait(1000);
 	.shuffle(CARDS, SHUFFLED_CARDS);
 	-+deck(SHUFFLED_CARDS).
 
 +!distribute_cards_to_players(CARDS_NUMBER): deck([]) <-
 	.print("Deck is empty").
 
-+!distribute_cards_to_players(CARDS_NUMBER): order(PLAYERS) & deck(CARDS) & 
-											 .length(CARDS) >= CARDS_NUMBER * .length(PLAYERS) <-
++!distribute_cards_to_players(CARDS_NUMBER): order(PLAYERS) & deck(CARDS) & .length(CARDS, DECK_COUNT) & 
+											 .length(PLAYERS, PL_COUNT) & DECK_COUNT >= CARDS_NUMBER * PL_COUNT <-
 	.print("Distributing cards to players");
+	.wait(1000);
 	for ( .member(PLAYER, PLAYERS) ) {
 		!distribute_cards_to_player(PLAYER, CARDS_NUMBER);
 	};
