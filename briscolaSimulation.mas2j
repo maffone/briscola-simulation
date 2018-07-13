@@ -1,18 +1,18 @@
 MAS briscolaSimulation {
 
 	agents:
-		player1 talkative_player 
+		player1 watcher_player 
 		agentArchClass it.unibo.tucson4jason.architecture.T4JnArchImpl;
-		player2 talkative_player 
+		player2 watcher_player 
 		agentArchClass it.unibo.tucson4jason.architecture.T4JnArchImpl;
-		player3 talkative_player 
+		player3 watcher_player 
 		agentArchClass it.unibo.tucson4jason.architecture.T4JnArchImpl;
-		player4 talkative_player 
+		player4 watcher_player 
 		agentArchClass it.unibo.tucson4jason.architecture.T4JnArchImpl;
-		/*dealer
+		dealer
 		agentArchClass it.unibo.tucson4jason.architecture.T4JnArchImpl;
 		referee
-		agentArchClass it.unibo.tucson4jason.architecture.T4JnArchImpl;*/
+		agentArchClass it.unibo.tucson4jason.architecture.T4JnArchImpl;
 
 	classpath:
 		"../libs/2p.jar";		
