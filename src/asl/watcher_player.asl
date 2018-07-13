@@ -99,9 +99,18 @@ basic_card_evaluation(card(liscia, _), 7).
 +!evaluate_cards: card_score(_, _).
 	
 +!evaluate_cards: not(card_score(_, _)) <-
+	!watch_cards_on_the_table;
 	.findall(card(VALUE, SEED), card(VALUE, SEED), CARDS_LIST);
 	for ( .member(CARD, CARDS_LIST) ) {
 		!eval_card(CARD);
+	}.
+	
++!watch_cards_on_the_table <-
+	.print("Looking at the cards on the table...");
+	t4jn.api.rdAll("default", "127.0.0.1", "20504", card_played(_, _, _), CARDS_OP);
+	t4jn.api.getResult(CARDS_OP, RESULT);
+	for ( .member(card_played(PLAYED_CARD, _, TEAM), RESULT) ) {
+		+card_played(PLAYED_CARD, TEAM);
 	}.
 	
 +!eval_card(CARD) <- 
