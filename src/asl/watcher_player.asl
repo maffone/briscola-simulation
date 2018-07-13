@@ -4,6 +4,8 @@
 
 /* Initial beliefs and rules */
 
+sequence_number(0).
+
 card_match(CARD, RANGE, SEED) :- card_range_match(CARD, RANGE) & card_seed_match(CARD, SEED).
 
 card_range_match(card(VALUE, _), liscia) :- (VALUE >=4 & VALUE <= 7) | VALUE = 2.
@@ -46,17 +48,21 @@ basic_card_evaluation(card(liscia, _), 8).
 	.print("I'm in the ", TEAM, " team.");
 	+turn(1);
 	!look_at_briscola;
+	+silent_mode(false);
 	!serve_question.
 	
 +your_turn(can_speak(X)): .count(card(VALUE, SEED), 3) | (turn(N) & N >= 9) <-
 	+max_questions(3);
 	!play_turn;
 	-max_questions(_);
-	-your_turn(_);
-	-+turn(N + 1).
-
--your_turn(_) <-
-	!serve_question.
+	-your_turn(_)[source(referee)];
+	-turn(N);
+	+turn(N+1);
+	if (silent_mode(true)) {
+		.print("exit silent mode");
+		-+silent_mode(false);
+		!serve_question;	
+	}.
 
 /* Plans */
 
@@ -125,8 +131,9 @@ basic_card_evaluation(card(liscia, _), 8).
 /***** PLAY CARD *****/	
 +!play_card(card(VALUE, SEED)) <-
 	.print("Playing card: ", VALUE, " of ", SEED, ".");
-	!place_card_on_the_table(card(VALUE, SEED));
-	.abolish(card_score(_)).
+	-card(VALUE, SEED)[source(dealer)];
+	.abolish(card_score(_,_));
+	!place_card_on_the_table(card(VALUE, SEED)).
 	
 +!place_card_on_the_table(CARD) <-
 	.my_name(ME);
@@ -139,17 +146,20 @@ basic_card_evaluation(card(liscia, _), 8).
 	.print("Sending question to companion: do you have ", ASK_RANGE, " of ", ASK_SEED, "?");
 	?team_name(MY_TEAM);
 	.my_name(ME);
-	t4jn.api.out("default", "127.0.0.1", "20504", ask_companion(team(MY_TEAM), from(ME), ask(ASK_RANGE, ASK_SEED)), OUT_ASK);
+	?sequence_number(SN);
+	t4jn.api.out("default", "127.0.0.1", "20504", ask_companion(team(MY_TEAM), from(ME), ask(ASK_RANGE, ASK_SEED), seq(SN)), OUT_ASK);
 	!process_response(card(VALUE, SEED)).
 	
 +!process_response(card(VALUE, SEED)) <-
 	?team_name(MY_TEAM);
 	.my_name(ME);
-	t4jn.api.rd("default", "127.0.0.1", "20504", conversation(team(MY_TEAM), from(ME), _, _, _), RD_ANS);
+	-sequence_number(SN);
+	t4jn.api.rd("default", "127.0.0.1", "20504", conversation(team(MY_TEAM), from(ME), _, _, _, seq(SN)), RD_ANS);
 	t4jn.api.getResult(RD_ANS, RESULT);
 	+RESULT;
 	.print("Companion answer received, processing...");
-	?conversation(team(MY_TEAM), from(ME), _, _, answer(ANSWER));
+	-conversation(team(MY_TEAM), from(ME), _, _, answer(ANSWER), _);
+	+sequence_number(SN+1);
 	!update_card_score(card(VALUE, SEED), ANSWER).
 	
 +!update_card_score(CARD, UP) <-
@@ -162,19 +172,22 @@ basic_card_evaluation(card(liscia, _), 8).
 	
 /***** ANSWER COMPANION *****/	
 +!serve_question <-
-	!receive_question(PLAYER, QUESTION_RANGE, QUESTION_SEED);
+	!receive_question(PLAYER, QUESTION_RANGE, QUESTION_SEED, SEQUENCE_NUMBER);
 	.my_name(ME);
 	if (PLAYER \== ME) {
 		!process_question(QUESTION_RANGE, QUESTION_SEED);
-		!answer_question;
+		!answer_question(SEQUENCE_NUMBER);
 		!serve_question;
+	} else {
+		.print("enter silent mode");
+		-+silent_mode(true);
 	}.
 	
-+!receive_question(PLAYER, QUESTION_RANGE, QUESTION_SEED): team_name(MY_TEAM) <-
-	t4jn.api.rd("default", "127.0.0.1", "20504", ask_companion(team(MY_TEAM), _, _), RD_Q);
++!receive_question(PLAYER, QUESTION_RANGE, QUESTION_SEED, SEQUENCE_NUMBER): team_name(MY_TEAM) <-
+	t4jn.api.rd("default", "127.0.0.1", "20504", ask_companion(team(MY_TEAM), _, _, _), RD_Q);
 	t4jn.api.getResult(RD_Q, RESULT);
 	+RESULT;
-	?ask_companion(team(MY_TEAM), from(PLAYER), ask(QUESTION_RANGE, QUESTION_SEED)).
+	-ask_companion(team(MY_TEAM), from(PLAYER), ask(QUESTION_RANGE, QUESTION_SEED), seq(SEQUENCE_NUMBER)).
 	
 +!process_question(QUESTION_RANGE, QUESTION_SEED) <-
 	.print("Question received, processing...");
@@ -186,10 +199,10 @@ basic_card_evaluation(card(liscia, _), 8).
 		}
 	}.
 
-+!answer_question: team_name(MY_TEAM) & answer_companion(RESPONSE) <-
++!answer_question(SEQUENCE_NUMBER): team_name(MY_TEAM) & answer_companion(RESPONSE) <-
 	.print("Sending response: ", RESPONSE);
 	.my_name(ME);
-	t4jn.api.out("default", "127.0.0.1", "20504", answer_companion(team(MY_TEAM), from(ME), RESPONSE), OUT_A);
+	t4jn.api.out("default", "127.0.0.1", "20504", answer_companion(team(MY_TEAM), from(ME), RESPONSE, seq(SEQUENCE_NUMBER)), OUT_A);
 	-answer_companion(_).
 	
 /***** TIME TO THINK *****/
