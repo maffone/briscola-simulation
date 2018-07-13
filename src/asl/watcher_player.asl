@@ -33,7 +33,7 @@ basic_card_evaluation(card(carico, _), 3).
 basic_card_evaluation(card(figura, MY_SEED), 5) :- briscola(card(_, MY_SEED)).
 basic_card_evaluation(card(figura, _), 7).
 basic_card_evaluation(card(liscia, MY_SEED), 6) :- briscola(card(_, MY_SEED)).
-basic_card_evaluation(card(liscia, _), 7).
+basic_card_evaluation(card(liscia, _), 8).
 	
 /* Initial goals */
 
@@ -189,7 +189,7 @@ basic_card_evaluation(card(liscia, _), 7).
 +!answer_question: team_name(MY_TEAM) & answer_companion(RESPONSE) <-
 	.print("Sending response: ", RESPONSE);
 	.my_name(ME);
-	t4jn.api.out("default", "127.0.0.1", "20504", answer_companion(team(MY_TEAM), from(ME), false), OUT_A);
+	t4jn.api.out("default", "127.0.0.1", "20504", answer_companion(team(MY_TEAM), from(ME), RESPONSE), OUT_A);
 	-answer_companion(_).
 	
 /***** TIME TO THINK *****/

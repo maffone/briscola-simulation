@@ -22,7 +22,8 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     -wanna_play(from(NAME))[source(SENDER)];
     !add_player(player(NAME, SENDER)).
     
-+card_distribution_done : true <- 
++card_distribution_done : true <-
+    -card_distribution_done[source(dealer)];
     !start_hand;
     !play_hand.
     
@@ -65,14 +66,14 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     +turns(1).
     
 +!start_hand : true <- 
-    .print("[referee] - start a new hand");
+    .print("start a new hand");
     -+cards_played([]).
     
 +!play_hand : turn_order([]) <- 
     !end_turn.
     
 +!play_hand : turn_order([P_NAME|TAIL]) <-
-    .print("[referee] - player ", P_NAME, " have to play");
+    .print("player ", P_NAME, " have to play");
     if (turn_order(L) & .length(L, LEN) & LEN > 2) {
         .send(P_NAME, tell, your_turn(can_speak(true)));
     } 
@@ -87,15 +88,18 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     !play_hand.
     
 +!end_turn : cards_played(L) & .length(L, LEN) & LEN == 4 <- 
-    .print("[referee] - turn ended, now calculate points");
+    .print("turn ended, now calculate points");
     !calculate_winner(WINNER);
-    .print("[referee] - the winner of this hand is ", WINNER);
+    .print("the winner of this hand is ", WINNER);
     !calculate_points(POINTS);
-    .print("[referee] - the winner scores ", POINTS, " points");
+    .print("the winner scores ", POINTS, " points");
     !assign_points(WINNER, POINTS);
     !set_new_first_player(WINNER);
-    ?turn(N);
-    -+turn(N+1);
+    ?turns(N);
+    -+turns(N+1);
+    for (team_points(T,P)) {
+        .print("team ", T, "  points: ", P);
+    }
     !new_turn.
     
 +!calculate_winner(WINNER) : cards_played(CP) & .length(CP, LEN) & LEN == 4 <-
@@ -144,30 +148,26 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
         -+winner(P_NAME);
         -+winner_card(card(VALUE, SEED));
     } else {
-        .print("[referee] - im in the else, fucckkk");
-        ?briscola(card(_, B_SEED));
-        .print("seed ", SEED, ",  briscola seed ", B_SEED);
         if (briscola(card(_, SEED))) {
-            .print("[referee] - this is briscola");
             -+winner(P_NAME);
             -+winner_card(card(VALUE, SEED));
         }   
     }.
     
-+!new_turn : turn(N) & N > 10 <- 
-    .print("[referee] - game ended :(");
++!new_turn : turns(N) & N > 10 <- 
+    .print("game ended :(");
     !end_game.
-+!new_turn : turn(N) & N <= 10 <-
++!new_turn : turns(N) & N <= 10 <-
     .print("[referee] - begin a new turn, contact the dealer...");
-    .wait(5000);
+    .wait(2000); // wait 2 seconds before the new hand.
     ?dealer_addr(DEALER);
     ?turn_order(TO);
+    .print(TO);
     .send(DEALER, tell, give_cards(order(TO))).
     
 +!end_game : true <- 
-    .print("game ended!");
-    ?team_points("blue", BLUE_POINTS);
-    ?team_points("red", RED_POINTS);
+    ?team_points(blue, BLUE_POINTS);
+    ?team_points(red, RED_POINTS);
     print("The red team scored ", RED_POINTS);
     print("The blue team scored ", BLUE_POINTS);
     if (BLUE_POINTS > RED_POINTS) {
@@ -180,11 +180,10 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
         else {
             .print("DRAW!");
         }
-    }
-    true.
+    }.
     
 +!random_first_player : players(LIST) & .length(LIST, LEN) & LEN == 4 <- 
-    .print("[referee] - select the first player randomly");
+    .print("select the first player randomly");
     .shuffle([0,1,2,3], [H|T]);
     !reorder_players(H).
     
