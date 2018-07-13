@@ -23,7 +23,6 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     !add_player(player(NAME, SENDER)).
     
 +card_distribution_done : true <-
-    .print("---------------------- MESSAGE RECEIVED"); 
     -card_distribution_done[source(dealer)];
     !start_hand;
     !play_hand.
@@ -160,7 +159,7 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     !end_game.
 +!new_turn : turns(N) & N <= 10 <-
     .print("[referee] - begin a new turn, contact the dealer...");
-    .wait(5000);
+    .wait(2000); // wait 2 seconds before the new hand.
     ?dealer_addr(DEALER);
     ?turn_order(TO);
     .print(TO);
