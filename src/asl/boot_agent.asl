@@ -10,14 +10,7 @@
 				  
 +!boot <- 
 	.print("Setting up tuple centre...");
-	!first.
-
-+!clean <- 
-	.print("Cleaning...");
-	t4jn.api.inAll("default", "127.0.0.1", "20504", briscola(_), ALL_OP);
-	t4jn.api.inAll("deafult", "127.0.0.1", "20504", card_played(_, _, _), ALL2_OP);
-	t4jn.api.inAll("default", "127.0.0.1", "20504", conversation(_, _, _, _, _), ALL3_OP);
-	.print("Cleaned");
+	t4jn.api.out("default", "127.0.0.1", "20504", last_hand([]), OUT_LH); 
 	!first.
 
 +!first <-
@@ -25,12 +18,12 @@
 		"default", 
 		"127.0.0.1", 
 		"20504", 
-		out(answer_companion(team(T),from(AP),A)), 
+		out(answer_companion(team(T),from(AP),A,seq(SN))), 
 		completion, 
 		reactions(
-			in(ask_companion(team(T),from(QP),ask(QR,QS))), 
-			in(answer_companion(team(T),from(AP),A)),
-			out(conversation(team(T),from(QP),to(AP),ask(QR, QS),answer(A)))
+			in(ask_companion(team(T),from(QP),ask(QR,QS),seq(SN))), 
+			in(answer_companion(team(T),from(AP),A,seq(SN))),
+			out(conversation(team(T),from(QP),to(AP),ask(QR, QS),answer(A),seq(SN)))
 		), 
 		OUT_S
 	);
@@ -40,4 +33,30 @@
 	!second.
 	
 +!second : true <-
+	t4jn.api.outS(
+		"default", 
+		"127.0.0.1", 
+		"20504", 
+		out(last_hand(_)), 
+		invocation, 
+		reactions(
+			in(last_hand(_))
+		), 
+		OUT_S
+	);
+	!finish.
+	
+-!second <- 
+	!finish.
+	
++!finish <-
 	.print("Done booting").
+	
+	
+	
+	
+	
+	
+	
+	
+	
