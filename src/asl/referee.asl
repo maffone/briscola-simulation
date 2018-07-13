@@ -24,7 +24,7 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     
 +card_distribution_done : true <-
     .print("---------------------- MESSAGE RECEIVED"); 
-    -card_distribution_done;
+    -card_distribution_done[source(dealer)];
     !start_hand;
     !play_hand.
     
@@ -167,8 +167,8 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     .send(DEALER, tell, give_cards(order(TO))).
     
 +!end_game : true <- 
-    ?team_points("blue", BLUE_POINTS);
-    ?team_points("red", RED_POINTS);
+    ?team_points(blue, BLUE_POINTS);
+    ?team_points(red, RED_POINTS);
     print("The red team scored ", RED_POINTS);
     print("The blue team scored ", BLUE_POINTS);
     if (BLUE_POINTS > RED_POINTS) {
@@ -181,8 +181,7 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
         else {
             .print("DRAW!");
         }
-    }
-    true.
+    }.
     
 +!random_first_player : players(LIST) & .length(LIST, LEN) & LEN == 4 <- 
     .print("select the first player randomly");

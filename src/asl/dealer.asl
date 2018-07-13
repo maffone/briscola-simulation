@@ -84,7 +84,8 @@
 +!place_briscola: deck([CARD|TAIL]) <-
 	.print("Placing the briscola");
 	t4jn.api.out("default", "127.0.0.1", "20504", briscola(CARD), OUT_BRISCOLA);
-	-+deck(TAIL).
+	.concat(TAIL, [CARD], DECK);
+	-+deck(DECK).
 	
 +!notify_job_end(RECEIVER) <-
 	.send(RECEIVER, tell, card_distribution_done).
