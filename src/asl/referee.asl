@@ -130,9 +130,9 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     
 +!assign_points(WINNER, POINTS) : players(PLAYERS) <- 
     .member(player(WINNER, TEAM, _), PLAYERS);
-    ?team_points(TEAM, P);
     .print("[referee] - the winning team of this hand is ", TEAM, " team");
-    -+team_points(TEAM, P+POINTS).
+    -team_points(TEAM, P);
+    +team_points(TEAM, P+POINTS).
     
 +!set_new_first_player(WINNER) : players(PLAYERS) <- 
     -+turn_order([])
@@ -143,7 +143,6 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     ?card_values(VL);
     .nth(CV, VL, value(VALUE, _));
     .nth(CWV, VL, value(WIN_VALUE, _));
-    .print(card(VALUE, SEED), "   player ", P_NAME);
     if (SEED == WIN_SEED & CV > CWV) {
         -+winner(P_NAME);
         -+winner_card(card(VALUE, SEED));
@@ -159,17 +158,17 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     !end_game.
 +!new_turn : turns(N) & N <= 10 <-
     .print("[referee] - begin a new turn, contact the dealer...");
+    !setup_table;
     .wait(2000); // wait 2 seconds before the new hand.
     ?dealer_addr(DEALER);
     ?turn_order(TO);
-    .print(TO);
     .send(DEALER, tell, give_cards(order(TO))).
     
 +!end_game : true <- 
     ?team_points(blue, BLUE_POINTS);
     ?team_points(red, RED_POINTS);
-    print("The red team scored ", RED_POINTS);
-    print("The blue team scored ", BLUE_POINTS);
+    .print("The red team scored ", RED_POINTS);
+    .print("The blue team scored ", BLUE_POINTS);
     if (BLUE_POINTS > RED_POINTS) {
         .print("BLUE TEAM WON!");
     } 
@@ -196,5 +195,10 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     -+turn_order([NAME|TU]);
     !reorder_players((FIRST_INDEX+1) mod 4).
     
++!setup_table <-
+	t4jn.api.inAll("default", "127.0.0.1", "20504", card_played(_, _, _), IN_CARDS);
+	t4jn.api.inAll("default", "127.0.0.1", "20504", conversation(_,_,_,_,_,_), IN_CONV);
+	?cards_played(LIST);
+    t4jn.api.out("default", "127.0.0.1", "20504", last_hand(LIST), OUT_LH).
     
     
