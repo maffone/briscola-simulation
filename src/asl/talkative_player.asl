@@ -48,7 +48,9 @@ basic_card_evaluation(card(liscia, _), 8).
 	!serve_question.
 	
 +your_turn(can_speak(X)): .count(card(VALUE, SEED), 3) | (turn(N) & N >= 9) <-
+	+max_questions(3);
 	!play_turn;
+	-max_questions(_);
 	-your_turn(_);
 	-+turn(N + 1).
 
@@ -113,8 +115,10 @@ basic_card_evaluation(card(liscia, _), 8).
 	!evaluate_cards;
 	!choose_best_card(BEST_CARD, BEST_SCORE);
 	?your_turn(can_speak(CAN_SPEAK));
-	if (CAN_SPEAK & BEST_SCORE < 8) {
+	
+	if (CAN_SPEAK & max_questions(N) & N >= 1 & BEST_SCORE <= 7) {
 		!ask_companion(BEST_CARD);
+		-+max_questions(N-1);
 	} else {
 		!play_card(BEST_CARD);
 	}.

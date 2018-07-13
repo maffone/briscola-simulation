@@ -33,7 +33,7 @@ basic_card_evaluation(card(carico, _), 3).
 basic_card_evaluation(card(figura, MY_SEED), 5) :- briscola(card(_, MY_SEED)).
 basic_card_evaluation(card(figura, _), 7).
 basic_card_evaluation(card(liscia, MY_SEED), 6) :- briscola(card(_, MY_SEED)).
-basic_card_evaluation(card(liscia, _), 8).
+basic_card_evaluation(card(liscia, _), 7).
 	
 /* Initial goals */
 
@@ -49,7 +49,9 @@ basic_card_evaluation(card(liscia, _), 8).
 	!serve_question.
 	
 +your_turn(can_speak(X)): .count(card(VALUE, SEED), 3) | (turn(N) & N >= 9) <-
+	+max_questions(3);
 	!play_turn;
+	-max_questions(_);
 	-your_turn(_);
 	-+turn(N + 1).
 
@@ -58,6 +60,8 @@ basic_card_evaluation(card(liscia, _), 8).
 
 /* Plans */
 
+
+/***** GAME SETUP *****/
 +!start: true <- 
 	.my_name(ME);
 	.print("Hello, I'm ", ME, "!");
@@ -72,7 +76,82 @@ basic_card_evaluation(card(liscia, _), 8).
 	t4jn.api.rd("default", "127.0.0.1", "20504", briscola(_), RD_B);
 	t4jn.api.getResult(RD_B, BRISCOLA);
 	+BRISCOLA.
+
+/***** THINK ******/	
++!play_turn: .count(card(VALUE, SEED), N) & N >= 1 <-
+	.print("It's my turn!");
+	!think.
 	
++!think <-
+	.print("Thinking...");
+	!time_to_think;
+	!evaluate_cards;
+	!choose_best_card(BEST_CARD, BEST_SCORE);
+	?your_turn(can_speak(CAN_SPEAK));
+	if (CAN_SPEAK & max_questions(N) & N >= 1 & BEST_SCORE <= 7) {
+		!ask_companion(BEST_CARD);
+		-+max_questions(N-1);
+		!think;
+	} else {
+		!play_card(BEST_CARD);
+	}.
+	
++!evaluate_cards: card_score(_, _).
+	
++!evaluate_cards: not(card_score(_, _)) <-
+	.findall(card(VALUE, SEED), card(VALUE, SEED), CARDS_LIST);
+	for ( .member(CARD, CARDS_LIST) ) {
+		!eval_card(CARD);
+	}.
+	
++!eval_card(CARD) <- 
+	?basic_card_evaluation(CARD, SCORE);
+	+card_score(CARD, SCORE).
+	
++!choose_best_card(BEST_CARD, BEST_SCORE) <-
+	.findall(SCORE, card_score(_, SCORE), CARDS_SCORES);
+	.max(CARDS_SCORES, BEST_SCORE);
+	?card_score(BEST_CARD, BEST_SCORE).
+
+/***** PLAY CARD *****/	
++!play_card(card(VALUE, SEED)) <-
+	.print("Playing card: ", VALUE, " of ", SEED, ".");
+	!place_card_on_the_table(card(VALUE, SEED));
+	.abolish(card_score(_)).
+	
++!place_card_on_the_table(CARD) <-
+	.my_name(ME);
+	?team_name(MY_TEAM);
+	t4jn.api.out("default", "127.0.0.1", "20504", card_played(CARD, from(ME), team(MY_TEAM)), OUT_CARD).
+	
+/***** ASK COMPANION *****/
++!ask_companion(card(VALUE, SEED)) <-
+	?think_question(card(VALUE, SEED), question(ASK_RANGE, ASK_SEED));
+	.print("Sending question to companion: do you have ", ASK_RANGE, " of ", ASK_SEED, "?");
+	?team_name(MY_TEAM);
+	.my_name(ME);
+	t4jn.api.out("default", "127.0.0.1", "20504", ask_companion(team(MY_TEAM), from(ME), ask(ASK_RANGE, ASK_SEED)), OUT_ASK);
+	!process_response(card(VALUE, SEED)).
+	
++!process_response(card(VALUE, SEED)) <-
+	?team_name(MY_TEAM);
+	.my_name(ME);
+	t4jn.api.rd("default", "127.0.0.1", "20504", conversation(team(MY_TEAM), from(ME), _, _, _), RD_ANS);
+	t4jn.api.getResult(RD_ANS, RESULT);
+	+RESULT;
+	.print("Companion answer received, processing...");
+	?conversation(team(MY_TEAM), from(ME), _, _, answer(ANSWER));
+	!update_card_score(card(VALUE, SEED), ANSWER).
+	
++!update_card_score(CARD, UP) <-
+	-card_score(CARD, SCORE);
+	if (UP) {
+		+card_score(CARD, SCORE + 3);
+	} else {
+		+card_score(CARD, SCORE - 3);
+	}.
+	
+/***** ANSWER COMPANION *****/	
 +!serve_question <-
 	!receive_question(PLAYER, QUESTION_RANGE, QUESTION_SEED);
 	.my_name(ME);
@@ -101,81 +180,13 @@ basic_card_evaluation(card(liscia, _), 8).
 +!answer_question: team_name(MY_TEAM) & answer_companion(RESPONSE) <-
 	.print("Sending response: ", RESPONSE);
 	.my_name(ME);
-	t4jn.api.out("default", "127.0.0.1", "20504", answer_companion(team(MY_TEAM), from(ME), RESPONSE), OUT_A);
+	t4jn.api.out("default", "127.0.0.1", "20504", answer_companion(team(MY_TEAM), from(ME), false), OUT_A);
 	-answer_companion(_).
 	
-+!play_turn: .count(card(VALUE, SEED), N) & N >= 1 <-
-	.print("It's my turn!");
-	!think.
-	
-+!think <-
-	.print("Thinking...");
-	!time_to_think;
-	!evaluate_cards;
-	!choose_best_card(BEST_CARD, BEST_SCORE);
-	?your_turn(can_speak(CAN_SPEAK));
-	if (CAN_SPEAK & BEST_SCORE < 8) {
-		!ask_companion(BEST_CARD);
-	} else {
-		!play_card(BEST_CARD);
-	}.
-	
-+!evaluate_cards: card_score(_, _).
-	
-+!evaluate_cards: not(card_score(_, _)) <-
-	.findall(card(VALUE, SEED), card(VALUE, SEED), CARDS_LIST);
-	for ( .member(CARD, CARDS_LIST) ) {
-		!eval_card(CARD);
-	}.
-	
-+!eval_card(CARD) <- 
-	?basic_card_evaluation(CARD, SCORE);
-	+card_score(CARD, SCORE).
-	
-+!choose_best_card(BEST_CARD, BEST_SCORE) <-
-	.findall(SCORE, card_score(_, SCORE), CARDS_SCORES);
-	.max(CARDS_SCORES, BEST_SCORE);
-	?card_score(BEST_CARD, BEST_SCORE).
-	
-+!ask_companion(card(VALUE, SEED)) <-
-	?think_question(card(VALUE, SEED), question(ASK_RANGE, ASK_SEED));
-	.print("Sending question to companion: do you have ", ASK_RANGE, " of ", ASK_SEED, "?");
-	?team_name(MY_TEAM);
-	.my_name(ME);
-	t4jn.api.out("default", "127.0.0.1", "20504", ask_companion(team(MY_TEAM), from(ME), ask(ASK_RANGE, ASK_SEED)), OUT_ASK);
-	!process_response(card(VALUE, SEED)).
-	
-+!process_response(card(VALUE, SEED)) <-
-	?team_name(MY_TEAM);
-	.my_name(ME);
-	t4jn.api.rd("default", "127.0.0.1", "20504", conversation(team(MY_TEAM), from(ME), _, _, _), RD_ANS);
-	t4jn.api.getResult(RD_ANS, RESULT);
-	+RESULT;
-	.print("Companion answer received, processing...");
-	?conversation(team(MY_TEAM), from(ME), _, _, answer(ANSWER));
-	!update_card_score(card(VALUE, SEED), ANSWER);
-	!think.
-	
-+!update_card_score(CARD, UP) <-
-	-card_score(CARD, SCORE);
-	if (UP) {
-		+card_score(CARD, SCORE + 3);
-	} else {
-		+card_score(CARD, SCORE - 3);
-	}.
-	
-+!play_card(card(VALUE, SEED)) <-
-	.print("Playing card: ", VALUE, " of ", SEED, ".");
-	!place_card_on_the_table(card(VALUE, SEED));
-	.abolish(card_score(_)).
-	
-+!place_card_on_the_table(CARD) <-
-	.my_name(ME);
-	?team_name(MY_TEAM);
-	t4jn.api.out("default", "127.0.0.1", "20504", card_played(CARD, from(ME), team(MY_TEAM)), OUT_CARD).
-	
+/***** TIME TO THINK *****/
 +!time_to_think <- .wait(2000).
 	
+/***** TEST *****/
 +!test_stuff <-
 	+briscola(card(6, coppe));
 	+team_name(red);
