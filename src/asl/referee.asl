@@ -170,15 +170,24 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     .print("The final score of the blue team is ", BLUE_POINTS, ".");
     if (BLUE_POINTS > RED_POINTS) {
         .print("THE BLUE TEAM WON! Congratulations! :)");
+        !tell_result_to_players(win(blue));
     } 
     else {
         if (RED_POINTS > BLUE_POINTS) {
             .print("THE RED TEAM WON! Congratulations! :)");
+            !tell_result_to_players(win(red));
         } 
         else {
             .print("IT'S A DRAW! Congratulations to both teams! :)");
+            !tell_result_to_players(draw);
         }
     }.
+    
++!tell_result_to_players(RESULT): players(PLAYERS) <-
+	for (.member(player(PLAYER, _, _), PLAYERS)) {
+		.send(PLAYER, tell, game_result(RESULT));
+	}.
+	
     
 +!random_first_player : players(LIST) & .length(LIST, LEN) & LEN == 4 <- 
     .shuffle([0,1,2,3], [H|T]);

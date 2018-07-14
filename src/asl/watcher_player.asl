@@ -69,6 +69,15 @@ winning_card([_|T], dominant(D_CARD, D_PL, D_TEAM), win(W_CARD, W_PL, W_TEAM)) :
 		-+silent_mode(false);
 		!serve_question;	
 	}.
+	
++game_result(win(MY_TEAM)): team_name(MY_TEAM) <-
+	.print("Wow :)").
+	
++game_result(win(MY_TEAM)): team_name(WINNING_TEAM) & MY_TEAM \== WINNING_TEAM <-
+	.print("Sob :(").
+	
++game_result(draw): team_name(_) <-
+	.print("Okay :|").
 
 /* Plans */
 

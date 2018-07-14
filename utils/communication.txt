@@ -69,5 +69,8 @@ ask_companion(team("red"), from(player2), ask("carico", "coppe"), seq(2)).
 //Answer tuple from player to tuple space:
 answer_companion(team("red"), from(player1), true, seq(2)).
 
+/*** END OF THE GAME ***/
+game_result(win(red)).
+game_result(draw).
 
 
