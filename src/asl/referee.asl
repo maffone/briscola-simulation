@@ -75,7 +75,7 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     
 +!play_hand : turn_order([P_NAME|TAIL]) <-
     .print("player ", P_NAME, " has to play");
-    if (turn_order(L) & .length(L, LEN) & LEN > 2) {
+    if (turns(N) & N > 1 & turn_order(L) & .length(L, LEN) & LEN > 2) {
         .send(P_NAME, tell, your_turn(can_speak(true)));
     } 
     else {
