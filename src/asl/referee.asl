@@ -59,21 +59,22 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     !random_first_player
     ?dealer_addr(DEALER_ADDR);
     ?turn_order(TO);
+    +turns(1);
     .send(DEALER_ADDR, tell, setup_deck(order(TO)));
     t4jn.api.rd("default", "127.0.0.1", "20504", briscola(CARD), OUT_CARD);
     t4jn.api.getResult(OUT_CARD, BR);
-    +BR;
-    +turns(1).
+    +BR.
     
 +!start_hand : true <- 
-    .print("start a new hand");
+	?turns(N);
+    .print("start a new hand, turn ", N);
     -+cards_played([]).
     
 +!play_hand : turn_order([]) <- 
     !end_turn.
     
 +!play_hand : turn_order([P_NAME|TAIL]) <-
-    .print("player ", P_NAME, " have to play");
+    .print("player ", P_NAME, " has to play");
     if (turn_order(L) & .length(L, LEN) & LEN > 2) {
         .send(P_NAME, tell, your_turn(can_speak(true)));
     } 
