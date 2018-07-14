@@ -15,7 +15,6 @@ card_range_match(_, any).
 	
 card_seed_match(card(_, SEED), SEED).
 card_seed_match(SEED, any) :- not(briscola(card(_, SEED))).
-//card_seed_match(_, any).
 
 think_question(card(VALUE, SEED), question(ASK_RANGE, ASK_SEED)) :- 
 	card_range_match(card(VALUE, SEED), RANGE) & RANGE \== any &
@@ -37,6 +36,15 @@ basic_card_evaluation(card(figura, _), 7).
 basic_card_evaluation(card(liscia, MY_SEED), 6) :- briscola(card(_, MY_SEED)).
 basic_card_evaluation(card(liscia, _), 8).
 	
+winning_card([], dominant(D_CARD, D_PL, D_TEAM), win(D_CARD, D_PL, D_TEAM)).
+winning_card([card_played(card(V, S), PL, TEAM, ORDER)|T], dominant(card(D_V, D_S), _, _), win(W_CARD, W_PL, W_TEAM)) :-
+	S == D_S & (V == 1 | (V == 3 & D_V \== 1) | (V > D_V & D_V \== 1 & D_V \== 3)) & 
+	winning_card(T, dominant(card(V, S), PL, TEAM), win(W_CARD, W_PL, W_TEAM)).
+winning_card([card_played(card(V, S), PL, TEAM, ORDER)|T], dominant(card(_, D_S), _, _), win(W_CARD, W_PL, W_TEAM)) :-
+	S \== D_S & briscola(card(_, S)) & winning_card(T, dominant(card(V, S), PL, TEAM), win(W_CARD, W_PL, W_TEAM)).
+winning_card([_|T], dominant(D_CARD, D_PL, D_TEAM), win(W_CARD, W_PL, W_TEAM)) :- 
+	winning_card(T, dominant(D_CARD, D_PL, D_TEAM), win(W_CARD, W_PL, W_TEAM)).
+	
 /* Initial goals */
 
 !start.
@@ -52,12 +60,12 @@ basic_card_evaluation(card(liscia, _), 8).
 	!serve_question.
 	
 +your_turn(can_speak(X)): .count(card(VALUE, SEED), 3) | (turn(N) & N >= 9) <-
-	+max_questions(3);
 	!play_turn;
-	-max_questions(_);
 	-your_turn(_)[source(referee)];
 	-turn(N);
 	+turn(N+1);
+	.abolish(conversation(_, _, _, _, _, _));
+	.abolish(card_played(_,_,_,_));
 	if (silent_mode(true)) {
 		.print("exit silent mode");
 		-+silent_mode(false);
@@ -94,17 +102,18 @@ basic_card_evaluation(card(liscia, _), 8).
 	!evaluate_cards;
 	!choose_best_card(BEST_CARD, BEST_SCORE);
 	?your_turn(can_speak(CAN_SPEAK));
-	if (CAN_SPEAK & max_questions(N) & N >= 1 & BEST_SCORE <= 7) {
-		!ask_companion(BEST_CARD);
-		-+max_questions(N-1);
+	!can_ask_questions(CAN_ASK);
+	if (CAN_SPEAK & CAN_ASK & BEST_SCORE <= 7) {
+		!choose_card_to_ask(ASK_CARD);
+		!ask_companion(ASK_CARD);
 		!think;
 	} else {
 		!play_card(BEST_CARD);
 	}.
 	
-+!evaluate_cards: card_score(_, _).
++!evaluate_cards: card_score(_, _, _).
 	
-+!evaluate_cards: not(card_score(_, _)) <-
++!evaluate_cards: not(card_score(_, _, _)) <-
 	!watch_cards_on_the_table;
 	.findall(card(VALUE, SEED), card(VALUE, SEED), CARDS_LIST);
 	for ( .member(CARD, CARDS_LIST) ) {
@@ -113,42 +122,92 @@ basic_card_evaluation(card(liscia, _), 8).
 	
 +!watch_cards_on_the_table <-
 	.print("Looking at the cards on the table...");
-	t4jn.api.rdAll("default", "127.0.0.1", "20504", card_played(_, _, _), CARDS_OP);
+	t4jn.api.rdAll("default", "127.0.0.1", "20504", card_played(_, _, _, _), CARDS_OP);
 	t4jn.api.getResult(CARDS_OP, RESULT);
-	for ( .member(card_played(PLAYED_CARD, _, TEAM), RESULT) ) {
-		+card_played(PLAYED_CARD, TEAM);
-	}.
+	for ( .member(card_played(PLAYED_CARD, PLAYER, TEAM, ORDER), RESULT) ) {
+		+card_played(PLAYED_CARD, PLAYER, TEAM, ORDER);
+	}
+	.length(RESULT, L);
+	-+my_order(L+1).
 	
 +!eval_card(CARD) <- 
 	?basic_card_evaluation(CARD, SCORE);
-	+card_score(CARD, SCORE).
+	+card_score(CARD, SCORE, final(false));
+	.findall(card_played(P_CARD, PLAYER, TEAM, ORDER), card_played(P_CARD, PLAYER, TEAM, ORDER), TABLE_CARDS);
+	if (not(.empty(TABLE_CARDS))) {
+		.member(card_played(D_CARD, D_PL, D_TEAM, order(1)), TABLE_CARDS);
+		!eval_card_with_table_cards(CARD, dominant(D_CARD, D_PL, D_TEAM), TABLE_CARDS);
+	}.
+	
++!eval_card_with_table_cards(CARD, DOMINANT, LIST) <-
+	?winning_card(LIST, DOMINANT, win(W_CARD, from(W_PLAYER), team(W_TEAM)));
+	if (team_name(W_TEAM)) {
+		!eval_card_with_team_winning(my_card(CARD));
+	} else {
+		!eval_card_with_team_losing(my_card(CARD), win(W_CARD, from(W_PLAYER), team(W_TEAM)));
+	}.
+	
++!eval_card_with_team_winning(my_card(card(VALUE, SEED))) <-
+	?card_range_match(card(VALUE, SEED), RANGE);
+	-card_score(card(VALUE, SEED), SCORE, FINAL);
+	if (briscola(card(_, SEED)) | RANGE == liscia) {
+		+card_score(card(VALUE, SEED), SCORE-3, FINAL);
+	} else {
+		+card_score(card(VALUE, SEED), SCORE+3, FINAL);
+	}.
+	
++!eval_card_with_team_losing(my_card(CARD), win(card(D_V, D_S), from(D_PL), team(D_TEAM))) <-
+	.my_name(ME);
+	?team_name(T);
+	?my_order(MY_ORDER);
+	?winning_card([card_played(CARD, from(ME), team(T), order(MY_ORDER))], 
+		dominant(card(D_V, D_S), from(D_PL), team(D_T)), win(_, from(W_PL), _)
+	);
+	if (W_PL == ME) {
+		-card_score(card(VALUE, SEED), SCORE, FINAL);
+		+card_score(card(VALUE, SEED), SCORE+6, FINAL);
+	}.
 	
 +!choose_best_card(BEST_CARD, BEST_SCORE) <-
-	.findall(SCORE, card_score(_, SCORE), CARDS_SCORES);
+	.findall(SCORE, card_score(_, SCORE, _), CARDS_SCORES);
 	.max(CARDS_SCORES, BEST_SCORE);
-	?card_score(BEST_CARD, BEST_SCORE).
+	?card_score(BEST_CARD, BEST_SCORE, _).
+
++!can_ask_questions(COUNT_ASK > 0) <-
+	.count(card_score(_, _, final(false)), COUNT_ASK).
+
++!choose_card_to_ask(ASK_CARD) <-
+	.findall(SCORE, card_score(CARD, SCORE, final(false)), ASK_LIST);
+	.max(ASK_LIST, MAX_SCORE);
+	?card_score(ASK_CARD, MAX_SCORE, final(false)).
+	
 
 /***** PLAY CARD *****/	
 +!play_card(card(VALUE, SEED)) <-
 	.print("Playing card: ", VALUE, " of ", SEED, ".");
 	-card(VALUE, SEED)[source(dealer)];
-	.abolish(card_score(_,_));
+	.abolish(card_score(_, _, _));
 	!place_card_on_the_table(card(VALUE, SEED)).
 	
 +!place_card_on_the_table(CARD) <-
 	.my_name(ME);
 	?team_name(MY_TEAM);
-	t4jn.api.out("default", "127.0.0.1", "20504", card_played(CARD, from(ME), team(MY_TEAM)), OUT_CARD).
+	?my_order(ORDER);
+	t4jn.api.out("default", "127.0.0.1", "20504", card_played(CARD, from(ME), team(MY_TEAM), order(ORDER)), OUT_CARD).
 	
 /***** ASK COMPANION *****/
 +!ask_companion(card(VALUE, SEED)) <-
 	?think_question(card(VALUE, SEED), question(ASK_RANGE, ASK_SEED));
-	.print("Sending question to companion: do you have ", ASK_RANGE, " of ", ASK_SEED, "?");
-	?team_name(MY_TEAM);
-	.my_name(ME);
-	?sequence_number(SN);
-	t4jn.api.out("default", "127.0.0.1", "20504", ask_companion(team(MY_TEAM), from(ME), ask(ASK_RANGE, ASK_SEED), seq(SN)), OUT_ASK);
-	!process_response(card(VALUE, SEED)).
+	if (conversation(_, _, _, ask(ASK_RANGE, ASK_SEED), answer(ANSWER), _)) {
+		!update_card_score(card(VALUE, SEED), ANSWER);
+	} else {
+		.print("Sending question to companion: do you have ", ASK_RANGE, " of ", ASK_SEED, "?");
+		?team_name(MY_TEAM);
+		.my_name(ME);
+		?sequence_number(SN);
+		t4jn.api.out("default", "127.0.0.1", "20504", ask_companion(team(MY_TEAM), from(ME), ask(ASK_RANGE, ASK_SEED), seq(SN)), OUT_ASK);
+		!process_response(card(VALUE, SEED));
+	}.
 	
 +!process_response(card(VALUE, SEED)) <-
 	?team_name(MY_TEAM);
@@ -158,16 +217,16 @@ basic_card_evaluation(card(liscia, _), 8).
 	t4jn.api.getResult(RD_ANS, RESULT);
 	+RESULT;
 	.print("Companion answer received, processing...");
-	-conversation(team(MY_TEAM), from(ME), _, _, answer(ANSWER), _);
-	+sequence_number(SN+1);
+	?conversation(team(MY_TEAM), from(ME), _, _, answer(ANSWER), seq(SN));
+	+sequence_number(SN + 1);
 	!update_card_score(card(VALUE, SEED), ANSWER).
 	
 +!update_card_score(CARD, UP) <-
-	-card_score(CARD, SCORE);
+	-card_score(CARD, SCORE, _);
 	if (UP) {
-		+card_score(CARD, SCORE + 3);
+		+card_score(CARD, SCORE + 3, final(true));
 	} else {
-		+card_score(CARD, SCORE - 3);
+		+card_score(CARD, SCORE - 3, final(true));
 	}.
 	
 /***** ANSWER COMPANION *****/	
@@ -210,13 +269,14 @@ basic_card_evaluation(card(liscia, _), 8).
 	
 /***** TEST *****/
 +!test_stuff <-
-	+briscola(card(6, coppe));
-	+team_name(red);
-	+card(1, spade);
-	+card_score(card(1, spade), 6);
-	?card_score(card(1, spade), CARD_SCORE_BEFORE);
-	.print("Card score before: ", CARD_SCORE_BEFORE);
-	!ask_companion(card(1, spade));
-	?card_score(card(1, spade), CARD_SCORE_AFTER);
-	.print("Card score after: ", CARD_SCORE_AFTER).
+	+briscola(card(_, SEED));
+	?winning_card(
+		[played(card(3, coppe), from(player2), team(blue))], 
+		dominant(card(1, bastoni), from(player1), team(RED)),
+		win(card(W_VALUE, W_SEED), from(W_PLAYER), team(W_TEAM))
+	);
+	.print(W_VALUE, " of ", W_SEED).
+	
+	
+	
 	

@@ -59,28 +59,29 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     !random_first_player
     ?dealer_addr(DEALER_ADDR);
     ?turn_order(TO);
+    +turns(1);
     .send(DEALER_ADDR, tell, setup_deck(order(TO)));
     t4jn.api.rd("default", "127.0.0.1", "20504", briscola(CARD), OUT_CARD);
     t4jn.api.getResult(OUT_CARD, BR);
-    +BR;
-    +turns(1).
+    +BR.
     
 +!start_hand : true <- 
-    .print("start a new hand");
+	?turns(N);
+    .print("start a new hand, turn ", N);
     -+cards_played([]).
     
 +!play_hand : turn_order([]) <- 
     !end_turn.
     
 +!play_hand : turn_order([P_NAME|TAIL]) <-
-    .print("player ", P_NAME, " have to play");
+    .print("player ", P_NAME, " has to play");
     if (turn_order(L) & .length(L, LEN) & LEN > 2) {
         .send(P_NAME, tell, your_turn(can_speak(true)));
     } 
     else {
         .send(P_NAME, tell, your_turn(can_speak(false)));
     }
-    t4jn.api.rd("default", "127.0.0.1", "20504", card_played(_, from(P_NAME), _), OUT_CARD);
+    t4jn.api.rd("default", "127.0.0.1", "20504", card_played(_, from(P_NAME), _, _), OUT_CARD);
     t4jn.api.getResult(OUT_CARD, RESULT);
     ?cards_played(LIST);
     -+cards_played([RESULT|LIST]);
@@ -105,11 +106,11 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
 +!calculate_winner(WINNER) : cards_played(CP) & .length(CP, LEN) & LEN == 4 <-
     .reverse(CP, PC); 
     +card_turn(PC);
-    ?card_turn([card_played(card(VALUE, SEED), from(P_NAME), _)|T]);
+    ?card_turn([card_played(card(VALUE, SEED), from(P_NAME), _, _)|T]);
     +winner(P_NAME);
     +winner_card(card(VALUE, SEED));
     -+card_turn(T);
-    for ( .member(card_played(A, B, _), T)) {
+    for ( .member(card_played(A, B, _, _), T)) {
         !check_superior_card(card_played(A, B, _));
     }
     ?winner(WINNER);
@@ -120,7 +121,7 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
 +!calculate_points(POINTS) : cards_played(CP) & .length(CP, LEN) & LEN == 4 <- 
     ?card_values(CV);
     +turn_points(0);
-    for ( .member(card_played(card(VALUE,_), _, _), CP)) {
+    for ( .member(card_played(card(VALUE,_), _, _ , _), CP)) {
         .member(value(VALUE, X), CV);
         ?turn_points(P);
         -+turn_points(P+X);
@@ -196,7 +197,7 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     !reorder_players((FIRST_INDEX+1) mod 4).
     
 +!setup_table <-
-	t4jn.api.inAll("default", "127.0.0.1", "20504", card_played(_, _, _), IN_CARDS);
+	t4jn.api.inAll("default", "127.0.0.1", "20504", card_played(_, _, _, _), IN_CARDS);
 	t4jn.api.inAll("default", "127.0.0.1", "20504", conversation(_,_,_,_,_,_), IN_CONV);
 	?cards_played(LIST);
     t4jn.api.out("default", "127.0.0.1", "20504", last_hand(LIST), OUT_LH).
