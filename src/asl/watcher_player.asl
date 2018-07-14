@@ -37,10 +37,10 @@ basic_card_evaluation(card(liscia, MY_SEED), 6) :- briscola(card(_, MY_SEED)).
 basic_card_evaluation(card(liscia, _), 8).
 	
 winning_card([], dominant(D_CARD, D_PL, D_TEAM), win(D_CARD, D_PL, D_TEAM)).
-winning_card([played(card(V, S), PL, TEAM)|T], dominant(card(D_V, D_S), _, _), win(W_CARD, W_PL, W_TEAM)) :-
+winning_card([card_played(card(V, S), PL, TEAM, ORDER)|T], dominant(card(D_V, D_S), _, _), win(W_CARD, W_PL, W_TEAM)) :-
 	S == D_S & (V == 1 | (V == 3 & D_V \== 1) | (V > D_V & D_V \== 1 & D_V \== 3)) & 
 	winning_card(T, dominant(card(V, S), PL, TEAM), win(W_CARD, W_PL, W_TEAM)).
-winning_card([played(card(V, S), PL, TEAM)|T], dominant(card(_, D_S), _, _), win(W_CARD, W_PL, W_TEAM)) :-
+winning_card([card_played(card(V, S), PL, TEAM, ORDER)|T], dominant(card(_, D_S), _, _), win(W_CARD, W_PL, W_TEAM)) :-
 	S \== D_S & briscola(card(_, S)) & winning_card(T, dominant(card(V, S), PL, TEAM), win(W_CARD, W_PL, W_TEAM)).
 winning_card([_|T], dominant(D_CARD, D_PL, D_TEAM), win(W_CARD, W_PL, W_TEAM)) :- 
 	winning_card(T, dominant(D_CARD, D_PL, D_TEAM), win(W_CARD, W_PL, W_TEAM)).
@@ -122,22 +122,25 @@ winning_card([_|T], dominant(D_CARD, D_PL, D_TEAM), win(W_CARD, W_PL, W_TEAM)) :
 	
 +!watch_cards_on_the_table <-
 	.print("Looking at the cards on the table...");
-	t4jn.api.rdAll("default", "127.0.0.1", "20504", card_played(_, _, _), CARDS_OP);
+	t4jn.api.rdAll("default", "127.0.0.1", "20504", card_played(_, _, _, _), CARDS_OP);
 	t4jn.api.getResult(CARDS_OP, RESULT);
-	for ( .member(card_played(PLAYED_CARD, PLAYER, TEAM), RESULT) ) {
-		+card_played(PLAYED_CARD, PLAYER, TEAM);
-	}.
+	for ( .member(card_played(PLAYED_CARD, PLAYER, TEAM, ORDER), RESULT) ) {
+		+card_played(PLAYED_CARD, PLAYER, TEAM, ORDER);
+	}
+	.length(RESULT, L);
+	-+my_order(L+1).
 	
 +!eval_card(CARD) <- 
 	?basic_card_evaluation(CARD, SCORE);
 	+card_score(CARD, SCORE, final(false));
-	.findall(card_played(CARD, PLAYER, TEAM), card_played(CARD, PLAYER, TEAM), TABLE_CARDS);
+	.findall(card_played(P_CARD, PLAYER, TEAM, ORDER), card_played(P_CARD, PLAYER, TEAM, ORDER), TABLE_CARDS);
 	if (not(.empty(TABLE_CARDS))) {
-		!eval_card_with_table_cards(CARD, TABLE_CARDS);
+		.member(card_played(D_CARD, D_PL, D_TEAM, order(1)), TABLE_CARDS);
+		!eval_card_with_table_cards(CARD, dominant(D_CARD, D_PL, D_TEAM), TABLE_CARDS);
 	}.
 	
-+!eval_card_with_table_cards(CARD, [dominant(D_CARD, D_PLAYER, D_TEAM) | TAIL]) <-
-	?winning_card(TAIL, dominant(D_CARD, D_PLAYER, D_TEAM), win(W_CARD, from(W_PLAYER), team(W_TEAM)));
++!eval_card_with_table_cards(CARD, DOMINANT, LIST) <-
+	?winning_card(LIST, DOMINANT, win(W_CARD, from(W_PLAYER), team(W_TEAM)));
 	if (team_name(W_TEAM)) {
 		!eval_card_with_team_winning(my_card(CARD));
 	} else {
@@ -156,7 +159,10 @@ winning_card([_|T], dominant(D_CARD, D_PL, D_TEAM), win(W_CARD, W_PL, W_TEAM)) :
 +!eval_card_with_team_losing(my_card(CARD), win(card(D_V, D_S), from(D_PL), team(D_TEAM))) <-
 	.my_name(ME);
 	?team_name(T);
-	?winning_card([played(CARD, from(ME), team(T))], dominant(card(D_V, D_S), from(D_PL), team(D_T)), win(_, from(W_PL), _));
+	?my_order(MY_ORDER);
+	?winning_card([card_played(CARD, from(ME), team(T), order(MY_ORDER))], 
+		dominant(card(D_V, D_S), from(D_PL), team(D_T)), win(_, from(W_PL), _)
+	);
 	if (W_PL == ME) {
 		-card_score(card(VALUE, SEED), SCORE, FINAL);
 		+card_score(card(VALUE, SEED), SCORE+6, FINAL);
@@ -186,7 +192,8 @@ winning_card([_|T], dominant(D_CARD, D_PL, D_TEAM), win(W_CARD, W_PL, W_TEAM)) :
 +!place_card_on_the_table(CARD) <-
 	.my_name(ME);
 	?team_name(MY_TEAM);
-	t4jn.api.out("default", "127.0.0.1", "20504", card_played(CARD, from(ME), team(MY_TEAM)), OUT_CARD).
+	?my_order(ORDER);
+	t4jn.api.out("default", "127.0.0.1", "20504", card_played(CARD, from(ME), team(MY_TEAM), order(ORDER)), OUT_CARD).
 	
 /***** ASK COMPANION *****/
 +!ask_companion(card(VALUE, SEED)) <-

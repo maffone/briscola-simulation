@@ -25,14 +25,14 @@ card(5, "coppe").
 your_turn(can_speak(true)).
 
 //Card played tuple from player to tuple space
-card_played(card(5, "coppe"), from(player1), team("red")).
+card_played(card(5, "coppe"), from(player1), team("red"), order(2)).
 
 //Tuple from referee to tuple space to reset the current hand
 last_hand([
-	card_played(card(5, "coppe"), from(player1), team("red")), 
-	card_played(card(9, "coppe"), from(player2), team("blue")),
-	card_played(card(4, "spade"), from(player3), team("red")),
-	card_played(card(2, "bastoni"), from(player4), team("blue"))
+	card_played(card(5, "coppe"), from(player1), team("red"), order(1)), 
+	card_played(card(9, "coppe"), from(player2), team("blue"), order(2)),
+	card_played(card(4, "spade"), from(player3), team("red"), order(3)),
+	card_played(card(2, "bastoni"), from(player4), team("blue"), order(4))
 ]).
 
 //Reset Reaction
@@ -40,13 +40,12 @@ out_s(
 	out(last_hand(_)),
 	(operation,invocation),
 	(
-		in_all(last_hand(_)),
-		in_all(card_played(_,_,_))
+		in(last_hand(_))
 	)
 ).
 
 //Reset Reaction (use this to easily execute in command line)
-out_s(out(last_hand(_)),(operation,invocation),(in_all(last_hand(_)),in_all(card_played(_,_,_)))).
+out_s(out(last_hand(_)),(operation,invocation),(in(last_hand(_)))).
 
 /*** CONVERSATION ***/
 
