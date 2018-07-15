@@ -220,6 +220,17 @@ L'architettura completa del sistema è illustrata in \autoref{general-architectu
 
 \subsection{Design di dettaglio} \label{design}
 
+Fissati struttura del sistema ed interazione, si passa ora ad una fase di design di dettaglio, che prevede un raffinamento per quei componenti che presentano ancora alcune lacune per poter essere effettivamente implementati. 
+
+Per quanto concerne arbitro e mazziere, non è necessario apportare perfezionamenti: essi dovranno semplicemente sottostare al regolamento di gioco attenendosi allo schema di interazione illustrato in \autoref{general-architecture}. Lo stesso discorso non può essere fatto per i giocatori, la cui logica interna utilizzata per scegliere la prossima carta da giocare non è ancora stata esplicitata. Si sceglie di assegnare ad ogni carta in mano una priorità, ovvero un valore che esprima quanto sia conveniente giocare una carta in relazione alle altre. Durante la fase di reasoning, questo valore può cambiare a seconda delle informazioni che il giocatore acquisisce, siano esse ricevute come risposta del compagno ad una domanda o acquisite mediante la consultazione delle carte già giocate sul tavolo. Più nello specifico, la valutazione di una carta avviene tramite tre fasi:
+\begin{enumerate}
+	\item \textbf{Assegnamento iniziale della priorità}: ad ogni carta viene assegnata una certa priorità sulla base del suo valore. In questa fase iniziale il giocatore assegna priorità più alta alle carte con valore più basso, in modo da giocare meno punti possibili qualora esso non riesca ad acquisire informazioni utili dal compagno o dal tavolo. Sempre per questa motivazione, alle briscole viene assegnata priorità bassa, di modo da conservarle per momenti più opportuni.
+	\item \textbf{Valutazione delle carte sul tavolo}: il giocatore consulta le eventuali carte già giocate sul tavolo e modifica la priorità delle proprie carte sulla base della seguente strategia: se la dominante è la carta del compagno, allora aumenta la priorità di figure e carichi, di modo da giocare più punti possibile. Se invece la dominante è la carta di uno dei due avversari, il giocatore aumenta la priorità delle carte in grado di prendere sulla dominante stessa.
+	\item \textbf{Domande al compagno}: qualora sia abilitato a farlo, in questa terza fase il giocatore di mano procede nel formulare una o più domande al compagno nel caso non abbia ancora certezza su quale carta giocare. L'ordine e la natura delle domande è stabilito dalla priorità attuale delle carte in mano: la prima sarà finalizzata ad acquisire informazioni utili a modificare la priorità della carta con priorità maggiore, procedendo poi con domande utili per le carte a priorità più bassa qualora sia necessario.    
+\end{enumerate}
+
+È importante precisare che a volte la valutazione potrebbe non passare per tutte le fasi illustrate. Ad esempio, se a seguire della prima fase il giocatore ha un certo livello di confidenza nel giocare una determinata carta rispetto alle altre (ovvero, la priorità della carta è maggiore di una soglia stabilita a priori), allora giocherà quella carta senza eseguire le successive fasi di valutazione. 
+
 \section{Implementazione} \label{implementation}
 
 \section{Conclusioni} \label{conclusions}
