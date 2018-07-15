@@ -1,4 +1,4 @@
-// Agent watcher_player in project briscolaSimulation.
+// Agent player in project briscolaSimulation.
 
 /* This agent can play a complete game of Briscola in the 4 players version.
  * He has a strategy to select the card to play at every turn. He can ask questions to his companion, 
