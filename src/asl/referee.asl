@@ -48,22 +48,22 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
 
 /* Beliefs addition */
 
-/* This behavior is triggered when a message is received from a player, indicating the will of the player
+/* This plan is triggered when a message is received from a player, indicating the will of the player
  * to play the game. The message is deleted and the plan add_player is executed.
  */
-+wanna_play(from(PLAYER)) : true <-
++wanna_play(from(PLAYER)) <-
     -wanna_play(from(NAME))[source(SENDER)];
     !add_player(player(NAME, SENDER)).
     
-/* This behavior is triggered when a message is received from the dealer, indicating that the dealer finished
+/* This plan is triggered when a message is received from the dealer, indicating that the dealer finished
  * the card distribution. The message is deleted and the hand is started.
  */
-+card_distribution_done : true <-
++card_distribution_done <-
     -card_distribution_done[source(dealer)];
     !start_hand;
     !play_hand.
     
-/* This behavior is triggered when the list of init players is edited, and it contains four elements. 
+/* This plan is triggered when the list of init players is edited, and it contains four elements. 
  * A team is assigned to every player, the player with the team is inserted in the list of players, and a message
  * is sent to the player, indicating the team assigned to them.
  */
@@ -77,7 +77,7 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
         -+teams(T);    
     }.
 
-/* This behavior is triggered when the list of players is edited, and it contains four elements. 
+/* This plan is triggered when the list of players is edited, and it contains four elements. 
  * This means that we have four players in the game, and every player has a team assigned to them.
  * The game can begin.
  */
@@ -90,7 +90,8 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
 /* The start plan only prints an hello message. The referee now waits for messages sent by players, in
  * order to join the game. 
  */
-+!start: true <- .print("Hello, I'm the referee!").
++!start <- 
+    .print("Hello, I'm the referee!").
 
 /* A player wants to join the game, but there are already 4 players. A message is displayed. */
 +!add_player(player(NAME, ADDRESS)) : players(LIST) & .length(LIST, LEN) & LEN >= 4 <-
@@ -122,10 +123,10 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
 /* Starts a new hand. Prints in the console the turn number, and the list containing the cards played is the
  * earlier turn is emptied.  
  */
-+!start_hand : true <- 
++!start_hand <- 
     -+cards_played([]).
     
-/* If a hand has to be played, but every player have already played in this hand trigger the end_turn plan. */
+/* If a hand has to be played, but every player have already played in this hand trigger the end_turn goal. */
 +!play_hand : turn_order([]) <- 
     !end_turn.
     
@@ -150,8 +151,8 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     
 /* Plan that manages the turn ending. Firstly the winner of this turn is calculated. Secondly the points scored
  * in this hand are computed. Thirdly the points are assigned to the winner team. Lastly the player that 
- * has won tis turn is set as the first player for the next turn. The turn number is increased, and the
- * plan new_turn is triggered.  
+ * has won this turn is set as the first player for the next turn. The turn number is increased, and the
+ * goal new_turn is triggered.  
  */
 +!end_turn : cards_played(L) & .length(L, LEN) & LEN == 4 <- 
     .print("This hand is over, I'm now calculating the points...");
@@ -243,7 +244,7 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     }.
     
 /* This plan is triggered when a new turn has to be started. If ten turn have already been played the 
- * end_game plan is triggered. 
+ * end_game goal is triggered. 
  * If the new turn can be played, the table is set up (the cards played in the last hand are removed) and a
  * message is sent to the dealer, to ask him to start the card distribution for the new hand. 
  * After this plan the agent will wait for the response message by the dealer.
@@ -262,7 +263,7 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
 /* If the game is finished, a message is printed on the console, showing what team has won the game. 
  * After that a message is sent to every player, indicating the team that won the game.
  */
-+!end_game : true <- 
++!end_game <- 
     ?team_points(blue, BLUE_POINTS);
     ?team_points(red, RED_POINTS);
     .print("The final score of the red team is ", RED_POINTS, ".");
