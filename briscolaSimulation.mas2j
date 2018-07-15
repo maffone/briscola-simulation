@@ -3,13 +3,13 @@ MAS briscolaSimulation {
 	agents:
 		boot boot_agent
 		agentArchClass it.unibo.tucson4jason.architecture.T4JnArchImpl;
-		player1 watcher_player 
+		player1 player 
 		agentArchClass it.unibo.tucson4jason.architecture.T4JnArchImpl;
-		player2 watcher_player 
+		player2 player 
 		agentArchClass it.unibo.tucson4jason.architecture.T4JnArchImpl;
-		player3 watcher_player 
+		player3 player 
 		agentArchClass it.unibo.tucson4jason.architecture.T4JnArchImpl;
-		player4 watcher_player 
+		player4 player 
 		agentArchClass it.unibo.tucson4jason.architecture.T4JnArchImpl;
 		dealer
 		agentArchClass it.unibo.tucson4jason.architecture.T4JnArchImpl;

@@ -85,7 +85,8 @@
  * These plans are used to distribute one or more card to each player, through the "send"
  * internal action.
  */
-+!distribute_cards_to_players(CARDS_NUMBER): deck([]).
++!distribute_cards_to_players(CARDS_NUMBER): deck([]) <-
+	.print("The deck is empty, my job for this hand is done.").
 
 +!distribute_cards_to_players(CARDS_NUMBER): order(PLAYERS) & deck(CARDS) & .length(CARDS, DECK_COUNT) & 
 											 .length(PLAYERS, PL_COUNT) & DECK_COUNT >= CARDS_NUMBER * PL_COUNT <-
@@ -94,6 +95,7 @@
 	for ( .member(PLAYER, PLAYERS) ) {
 		!distribute_cards_to_player(PLAYER, CARDS_NUMBER);
 	};
+	.print("Card distributed, my job for this hand is done.");
 	-order(PLAYER).
 
 +!distribute_cards_to_player(PLAYER, CARDS_NUMBER): CARDS_NUMBER < 1.
@@ -117,6 +119,5 @@
  * Plan used to notify the referee when the card distribution is done.
  */
 +!notify_job_end(RECEIVER) <-
-	.print("Card distributed, my job for this hand is done.");
 	.send(RECEIVER, tell, card_distribution_done).
 	
