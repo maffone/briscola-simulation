@@ -1,5 +1,16 @@
 // Agent referee in project briscolaSimulation
 
+/*
+ * This agent is the referee of the match, and it acts as a coordinator for the entire match. Its main 
+ * task are:
+ * - Take track of the turn order, and ascertain that the players play in this order.
+ * - Contact the dealer, telling him to distribute the cards to the players.
+ * - Calculate the points and the winner player of every hand.
+ * - Take track of the points scored by the two teams.
+ * - Take track of the turns in the game, and proclaim the winner team at the end of the game. 
+ */
+
+
 /* Initial beliefs and rules */
 
 /* The (initial empty) list of players of this match. */
@@ -203,7 +214,7 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     
 /* Set the winner of the last hand as the new first player of the next hand. This plan gets the index
  * of the winner player in the list of player, and use the plan reorder_players to reorder the turn order
- * accordingly to the new first player.
+ * according to the new first player.
  */
 +!set_new_first_player(WINNER) : players(PLAYERS) <- 
     -+turn_order([])
@@ -231,6 +242,12 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
         }   
     }.
     
+/* This plan is triggered when a new turn has to be started. If ten turn have already been played the 
+ * end_game plan is triggered. 
+ * If the new turn can be played, the table is set up (the cards played in the last hand are removed) and a
+ * message is sent to the dealer, to ask him to start the card distribution for the new hand. 
+ * After this plan the agent will wait for the response message by the dealer.
+ */ 
 +!new_turn : turns(N) & N > 10 <- 
     .print("The game is over! :(");
     !end_game.
@@ -242,6 +259,9 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     ?turn_order(TO);
     .send(DEALER, tell, give_cards(order(TO))).
     
+/* If the game is finished, a message is printed on the console, showing what team has won the game. 
+ * After that a message is sent to every player, indicating the team that won the game.
+ */
 +!end_game : true <- 
     ?team_points(blue, BLUE_POINTS);
     ?team_points(red, RED_POINTS);
@@ -262,18 +282,23 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
         }
     }.
     
+/* Sends a message to every player, indicating the team that won the game (or draw). */
 +!tell_result_to_players(RESULT): players(PLAYERS) <-
 	for (.member(player(PLAYER, _, _), PLAYERS)) {
 		.send(PLAYER, tell, game_result(RESULT));
 	}.
 	
-    
+/* Select randomly the first player of the game, and reorder the turn order. */
 +!random_first_player : players(LIST) & .length(LIST, LEN) & LEN == 4 <- 
     .shuffle([0,1,2,3], [H|T]);
     !reorder_players(H);
     ?turn_order([FIRST|PLAYERS]);
     .print("The player ", FIRST, " has been randomly chosen as the first player.").
     
+/* Reorder the players according to the given first player. If the turn order is already composed 
+ * length of the list = 4, then reverse it. If the turn order is not completed, add in the list the player
+ * with the given index. 
+ */ 
 +!reorder_players(FIRST_INDEX) : turn_order(TU) & .length(TU, LEN) & LEN == 4 <- 
     .reverse(TU, UT);
     -+turn_order(UT).
@@ -282,7 +307,10 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     .nth(FIRST_INDEX, LIST, player(NAME,_,_));
     -+turn_order([NAME|TU]);
     !reorder_players((FIRST_INDEX+1) mod 4).
-    
+   
+/* Setup the table of the game. Removes all the cards played in the last hand, and all the conversations.
+ * Insert the last hand, that contains the cards played in the last hand.  
+ */ 
 +!setup_table <-
 	t4jn.api.inAll("default", "127.0.0.1", "20504", card_played(_, _, _, _), IN_CARDS);
 	t4jn.api.inAll("default", "127.0.0.1", "20504", conversation(_,_,_,_,_,_), IN_CONV);
