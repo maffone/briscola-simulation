@@ -93,10 +93,14 @@ think_question(card(liscia, MY_SEED), question(any, MY_SEED)).
 		!serve_question;	
 	}.
 	
-/* The game is over and the referee has just notified this player the final result. */
-+game_result(win(MY_TEAM)): team_name(MY_TEAM) <- .print("Wow :)").
-+game_result(win(MY_TEAM)): team_name(WINNING_TEAM) & MY_TEAM \== WINNING_TEAM <- .print("Sob :(").
-+game_result(draw): team_name(_) <- .print("Okay :|").
+/* The game is over and the referee has just notified this player the final result. The player reacts to the 
+ * final result, and then ends his execution.
+ */
++game_result(GAME_RESULT) <- 
+	!game_over(GAME_RESULT);
+	.print("Bye!")
+	.my_name(ME);
+	.kill_agent(ME).
 
 
 /* Plans */
@@ -340,6 +344,13 @@ think_question(card(liscia, MY_SEED), question(any, MY_SEED)).
 	.my_name(ME);
 	t4jn.api.out("default", "127.0.0.1", "20504", answer_companion(team(MY_TEAM), from(ME), RESPONSE, seq(SEQUENCE_NUMBER)), OUT_A);
 	-answer_companion(_).
+
+// --------------- GAME_OVER ---------------
+
+/* The game is over. The player reacts to the final result of the game. */
++!game_over(win(MY_TEAM)): team_name(MY_TEAM) <- .print("Wow :)").
++!game_over(win(MY_TEAM)): team_name(WINNING_TEAM) & MY_TEAM \== WINNING_TEAM <- .print("Sob :(").
++!game_over(draw): team_name(_) <- .print("Okay :|").
 	
 // --------------- TIME TO THINK ---------------
 
