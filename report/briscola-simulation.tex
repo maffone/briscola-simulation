@@ -232,7 +232,21 @@ Per quanto concerne arbitro e mazziere, non è necessario apportare perfezioname
 È importante precisare che a volte la valutazione potrebbe non passare per tutte le fasi illustrate. Ad esempio, se a seguire della prima fase il giocatore ha un certo livello di confidenza nel giocare una determinata carta rispetto alle altre (ovvero, la priorità della carta è maggiore di una soglia stabilita a priori), allora giocherà quella carta senza eseguire le successive fasi di valutazione. 
 
 \section{Implementazione} \label{implementation}
+In questa sezione verranno descritte le scelte fatte in fase di implementazione, basate sulla progettazione, descritta in \autoref{general-design}. I due componenti principali del progetto sono risultati il sistema multiagente e lo spazio di tuple; di seguito sono riportate, per ognuno di essi, le scelte implementative di maggior rilievo.  
+\subsection{Agenti}
+	Abbiamo scelto di utilizzare \emph{Jason}\footnote{\url{http://jason.sourceforge.net/wp}} per l'implementazione degli agenti. Esso è un interprete basato su \emph{Java} di una versione estesa del linguaggio \emph{AgentSpeak} con sintassi molto simile a quella del \emph{prolog}. Tramite tale linguaggio è possibile programmare i singoli agenti a livello di \emph{belief}, \emph{goal} e \emph{piani}. Ogni agente è stato implementato in modo indipendente, seguendo i compiti a lui assegnati in \autoref{general-design}. L'interazione tra gli agenti avviene come definito in \autoref{problem-analysis}, e si basa su scambio di messaggi o coordinazione tramite lo spazio di tuple. 
+	
+	Gli agenti non hanno solamente un comportamento proattivo, ma grazie all'infrastruttura messa a disposizione da \emph{Jason}, essi sono reattivi alla ricezione di messaggi. Infatti, ogni messaggio recapitato ad un agente, viene inserito nella sua base di conoscenza, come un semplice \emph{belief}. \`{E} possibile aggiungere un \emph{piano} all'agente, che viene eseguito ogni qualvolta un messaggio viene inserito all'interno della sua base di conoscenza. Il flusso di esecuzione di tale piano è parallelo a quello principale dell'agente, e, nel caso arrivino più messaggi, saranno eseguiti più flussi paralleli. In questo modo un agente riesce a essere reattivo alla ricezione dei messaggi, in modo semplice e totalmente trasparente, dato che non richiede l'uso di complesse tecniche di programmazione.
+\subsection{Spazio di tuple}
+Abbiamo deciso di utilizzare \emph{TuCSoN}\footnote{\url{http://apice.unibo.it/xwiki/bin/view/TuCSoN/WebHome}} come spazio di tuple. Purtroppo non è possibile utilizzare \emph{TuCSoN} nativamente all'interno di codice interpretato da \emph{Jason}, per cui ci siamo avvalsi della libreria \emph{TuCSoN4Jason}\footnote{\url{https://apice.unibo.it/xwiki/bin/view/TuCSoN/4Jason}}, che come \emph{TuCSoN} è stata sviluppata all'interno dell'Università di Bologna. 
 
+In fase di implementazione è stato necessario creare un nuovo agente, chiamato \texttt{boot\_agent}, il quale ha lo scopo di inserire, all'avvio del sistema, le reazioni necessarie all'interno dello spazio di tuple. Tali reazioni sono: 
+\begin{itemize}
+	\item Unione delle tuple inerenti ad una domanda, e alla sua risposta, all'interno di un'unica tupla: \emph{conversation}.
+	\item Rimozione dell'ultima mano giocata, una volta che l'arbitro ne inserisce una nuova.
+	\item Inserimento, all'inizio della partita, della tupla inerente all'ultima mano giocata. Tale tupla conterrà una lista vuota, dato che ancora nessuna mano è stata giocata.
+\end{itemize}
+Lo spazio di tuple, nelle fasi di implementazione e testing, è stato eseguito nella stessa macchina su cui erano in esecuzione gli agenti \emph{Jason}. Nulla però vieta di distribuire il sistema, inserendo lo spazio di tuple in una macchina diversa (possibilmente anche remota) rispetto a quella su cui risiedono gli agenti. Anche gli agenti stessi possono venire distribuiti, ad esempio eseguendo ognuno di essi su macchine diverse.
 \section{Conclusioni} \label{conclusions}
 
 \fancyhead{}
