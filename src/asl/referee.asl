@@ -33,6 +33,7 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
         ?teams([H|T]);
         ?players(PL);
         -+players([player(NAME, H, ADDRESS)|PL]);
+        .print("I'm making the teams: ", NAME, " is in the ", H, " team.");
         .send(NAME, tell, team_name(H));
         -+teams(T);    
     }.
@@ -50,11 +51,11 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     true.
 
 +!add_player(player(NAME, ADDRESS)) : init_players(LIST) & .length(LIST, LEN) & LEN < 4 <-
-    .print("A new player wants to join the game!");
+    .print("A new player wants to join the game, welcome ", NAME, "!");
     -+init_players([player(NAME, ADDRESS) | LIST]).
     
 +!start_game : players(LIST) & .length(LIST, LEN) & LEN == 4 <- 
-    .print("starting the game, contact the dealer and ask him to setup the deck...");
+    .print("Let's start the game! The dealer has to shuffle the deck and distribute the cards...");
     .wait(1000);
     !random_first_player
     ?dealer_addr(DEALER_ADDR);
@@ -66,16 +67,14 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     +BR.
     
 +!start_hand : true <- 
-	?turns(N);
-    .print("start a new hand, turn ", N);
     -+cards_played([]).
     
 +!play_hand : turn_order([]) <- 
     !end_turn.
     
 +!play_hand : turn_order([P_NAME|TAIL]) <-
-    .print("player ", P_NAME, " has to play");
-    if (turn_order(L) & .length(L, LEN) & LEN > 2) {
+    .print("Player ", P_NAME, ", it's your turn to play.");
+    if (turns(N) & N > 1 & turn_order(L) & .length(L, LEN) & LEN > 2) {
         .send(P_NAME, tell, your_turn(can_speak(true)));
     } 
     else {
@@ -89,18 +88,17 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     !play_hand.
     
 +!end_turn : cards_played(L) & .length(L, LEN) & LEN == 4 <- 
-    .print("turn ended, now calculate points");
+    .print("This hand is over, I'm now calculating the points...");
     !calculate_winner(WINNER);
-    .print("the winner of this hand is ", WINNER);
     !calculate_points(POINTS);
-    .print("the winner scores ", POINTS, " points");
+    .print("The winner of this hand is ", WINNER, " with ", POINTS, " points!");
     !assign_points(WINNER, POINTS);
     !set_new_first_player(WINNER);
     ?turns(N);
     -+turns(N+1);
-    for (team_points(T,P)) {
+    /*for (team_points(T,P)) {
         .print("team ", T, "  points: ", P);
-    }
+    }*/
     !new_turn.
     
 +!calculate_winner(WINNER) : cards_played(CP) & .length(CP, LEN) & LEN == 4 <-
@@ -131,7 +129,7 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     
 +!assign_points(WINNER, POINTS) : players(PLAYERS) <- 
     .member(player(WINNER, TEAM, _), PLAYERS);
-    .print("[referee] - the winning team of this hand is ", TEAM, " team");
+    .print("The winning team of this hand is the ", TEAM, " team.");
     -team_points(TEAM, P);
     +team_points(TEAM, P+POINTS).
     
@@ -155,10 +153,10 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
     }.
     
 +!new_turn : turns(N) & N > 10 <- 
-    .print("game ended :(");
+    .print("The game is over! :(");
     !end_game.
 +!new_turn : turns(N) & N <= 10 <-
-    .print("[referee] - begin a new turn, contact the dealer...");
+    .print("It's turn ", N, ", let's start a new hand! The dealer has to distribute the cards...");
     !setup_table;
     .wait(2000); // wait 2 seconds before the new hand.
     ?dealer_addr(DEALER);
@@ -168,24 +166,34 @@ card_values([value(2,0), value(4,0), value(5,0), value(6,0), value(7,0), value(8
 +!end_game : true <- 
     ?team_points(blue, BLUE_POINTS);
     ?team_points(red, RED_POINTS);
-    .print("The red team scored ", RED_POINTS);
-    .print("The blue team scored ", BLUE_POINTS);
+    .print("The final score of the red team is ", RED_POINTS, ".");
+    .print("The final score of the blue team is ", BLUE_POINTS, ".");
     if (BLUE_POINTS > RED_POINTS) {
-        .print("BLUE TEAM WON!");
+        .print("THE BLUE TEAM WON! Congratulations! :)");
+        !tell_result_to_players(win(blue));
     } 
     else {
         if (RED_POINTS > BLUE_POINTS) {
-            .print("RED TEAM WON!");
+            .print("THE RED TEAM WON! Congratulations! :)");
+            !tell_result_to_players(win(red));
         } 
         else {
-            .print("DRAW!");
+            .print("IT'S A DRAW! Congratulations to both teams! :)");
+            !tell_result_to_players(draw);
         }
     }.
     
++!tell_result_to_players(RESULT): players(PLAYERS) <-
+	for (.member(player(PLAYER, _, _), PLAYERS)) {
+		.send(PLAYER, tell, game_result(RESULT));
+	}.
+	
+    
 +!random_first_player : players(LIST) & .length(LIST, LEN) & LEN == 4 <- 
-    .print("select the first player randomly");
     .shuffle([0,1,2,3], [H|T]);
-    !reorder_players(H).
+    !reorder_players(H);
+    ?turn_order([FIRST|PLAYERS]);
+    .print("The player ", FIRST, " has been randomly chosen as the first player.").
     
 +!reorder_players(FIRST_INDEX) : turn_order(TU) & .length(TU, LEN) & LEN == 4 <- 
     .reverse(TU, UT);

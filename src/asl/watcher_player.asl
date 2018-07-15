@@ -53,7 +53,6 @@ winning_card([_|T], dominant(D_CARD, D_PL, D_TEAM), win(W_CARD, W_PL, W_TEAM)) :
 /* Beliefs addition */
 
 +team_name(TEAM) <-
-	.print("I'm in the ", TEAM, " team.");
 	+turn(1);
 	!look_at_briscola;
 	+silent_mode(false);
@@ -67,23 +66,29 @@ winning_card([_|T], dominant(D_CARD, D_PL, D_TEAM), win(W_CARD, W_PL, W_TEAM)) :
 	.abolish(conversation(_, _, _, _, _, _));
 	.abolish(card_played(_,_,_,_));
 	if (silent_mode(true)) {
-		.print("exit silent mode");
 		-+silent_mode(false);
 		!serve_question;	
 	}.
+	
++game_result(win(MY_TEAM)): team_name(MY_TEAM) <-
+	.print("Wow :)").
+	
++game_result(win(MY_TEAM)): team_name(WINNING_TEAM) & MY_TEAM \== WINNING_TEAM <-
+	.print("Sob :(").
+	
++game_result(draw): team_name(_) <-
+	.print("Okay :|").
 
 /* Plans */
 
 
 /***** GAME SETUP *****/
-+!start: true <- 
-	.my_name(ME);
-	.print("Hello, I'm ", ME, "!");
++!start <- 
 	!wanna_play.
 				 
 +!wanna_play <- 
-	.print("I wanna play");
 	.my_name(ME);
+	.print("Hello, I'm ", ME, ", I wanna play!");
 	.send(referee, tell, wanna_play(from(ME))).
 	
 +!look_at_briscola <-
@@ -93,11 +98,10 @@ winning_card([_|T], dominant(D_CARD, D_PL, D_TEAM), win(W_CARD, W_PL, W_TEAM)) :
 
 /***** THINK ******/	
 +!play_turn: .count(card(VALUE, SEED), N) & N >= 1 <-
-	.print("It's my turn!");
+	.print("It's my turn! I need some time to think...");
 	!think.
 	
 +!think <-
-	.print("Thinking...");
 	!time_to_think;
 	!evaluate_cards;
 	!choose_best_card(BEST_CARD, BEST_SCORE);
@@ -116,12 +120,13 @@ winning_card([_|T], dominant(D_CARD, D_PL, D_TEAM), win(W_CARD, W_PL, W_TEAM)) :
 +!evaluate_cards: not(card_score(_, _, _)) <-
 	!watch_cards_on_the_table;
 	.findall(card(VALUE, SEED), card(VALUE, SEED), CARDS_LIST);
+	.print("I'm evaluating my cards...");
 	for ( .member(CARD, CARDS_LIST) ) {
 		!eval_card(CARD);
 	}.
 	
 +!watch_cards_on_the_table <-
-	.print("Looking at the cards on the table...");
+	.print("I'm looking at the cards on the table...");
 	t4jn.api.rdAll("default", "127.0.0.1", "20504", card_played(_, _, _, _), CARDS_OP);
 	t4jn.api.getResult(CARDS_OP, RESULT);
 	for ( .member(card_played(PLAYED_CARD, PLAYER, TEAM, ORDER), RESULT) ) {
@@ -184,7 +189,7 @@ winning_card([_|T], dominant(D_CARD, D_PL, D_TEAM), win(W_CARD, W_PL, W_TEAM)) :
 
 /***** PLAY CARD *****/	
 +!play_card(card(VALUE, SEED)) <-
-	.print("Playing card: ", VALUE, " of ", SEED, ".");
+	.print("I'm playing this card: ", VALUE, " of ", SEED, ".");
 	-card(VALUE, SEED)[source(dealer)];
 	.abolish(card_score(_, _, _));
 	!place_card_on_the_table(card(VALUE, SEED)).
@@ -201,7 +206,7 @@ winning_card([_|T], dominant(D_CARD, D_PL, D_TEAM), win(W_CARD, W_PL, W_TEAM)) :
 	if (conversation(_, _, _, ask(ASK_RANGE, ASK_SEED), answer(ANSWER), _)) {
 		!update_card_score(card(VALUE, SEED), ANSWER);
 	} else {
-		.print("Sending question to companion: do you have ", ASK_RANGE, " of ", ASK_SEED, "?");
+		.print("Mm, I need some help from my teammate: do you have ", ASK_RANGE, " of ", ASK_SEED, "?");
 		?team_name(MY_TEAM);
 		.my_name(ME);
 		?sequence_number(SN);
@@ -216,7 +221,7 @@ winning_card([_|T], dominant(D_CARD, D_PL, D_TEAM), win(W_CARD, W_PL, W_TEAM)) :
 	t4jn.api.rd("default", "127.0.0.1", "20504", conversation(team(MY_TEAM), from(ME), _, _, _, seq(SN)), RD_ANS);
 	t4jn.api.getResult(RD_ANS, RESULT);
 	+RESULT;
-	.print("Companion answer received, processing...");
+	.print("Okay, let me think about it...");
 	?conversation(team(MY_TEAM), from(ME), _, _, answer(ANSWER), seq(SN));
 	+sequence_number(SN + 1);
 	!update_card_score(card(VALUE, SEED), ANSWER).
@@ -238,7 +243,6 @@ winning_card([_|T], dominant(D_CARD, D_PL, D_TEAM), win(W_CARD, W_PL, W_TEAM)) :
 		!answer_question(SEQUENCE_NUMBER);
 		!serve_question;
 	} else {
-		.print("enter silent mode");
 		-+silent_mode(true);
 	}.
 	
@@ -249,7 +253,7 @@ winning_card([_|T], dominant(D_CARD, D_PL, D_TEAM), win(W_CARD, W_PL, W_TEAM)) :
 	-ask_companion(team(MY_TEAM), from(PLAYER), ask(QUESTION_RANGE, QUESTION_SEED), seq(SEQUENCE_NUMBER)).
 	
 +!process_question(QUESTION_RANGE, QUESTION_SEED) <-
-	.print("Question received, processing...");
+	.print("Mm, let me check my cards...");
 	!time_to_think;
 	+answer_companion(false);
 	for ( card(VALUE, SEED) ) {
@@ -259,7 +263,11 @@ winning_card([_|T], dominant(D_CARD, D_PL, D_TEAM), win(W_CARD, W_PL, W_TEAM)) :
 	}.
 
 +!answer_question(SEQUENCE_NUMBER): team_name(MY_TEAM) & answer_companion(RESPONSE) <-
-	.print("Sending response: ", RESPONSE);
+	if (RESPONSE) {
+		.print("Yes, I have the card you're looking for!");
+	} else {
+		.print("I'm sorry, but I don't have such card.");
+	}
 	.my_name(ME);
 	t4jn.api.out("default", "127.0.0.1", "20504", answer_companion(team(MY_TEAM), from(ME), RESPONSE, seq(SEQUENCE_NUMBER)), OUT_A);
 	-answer_companion(_).
