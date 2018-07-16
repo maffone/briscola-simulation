@@ -7,7 +7,7 @@ Each player is capable of reasoning on the cards in its hand to choose the best 
 ## Implementation
 Players have been implemented as [_Jason_](http://jason.sourceforge.net/) agents and the whole match takes place through a [_TuCSoN_](http://apice.unibo.it/xwiki/bin/view/TuCSoN/WebHome) tuple centre, which reifies the game table: each card played on it, encoded by a tuple, is visible by all the players, along with the trump card. Conversations between players are stored in the tuple centre for the whole turn in which they were made, so that they can be perceived by everyone, opponents too. All the information that mustn't be available to all the agents is exchanged through _Jason_ messaged between the interested parties.
 ## How To Run
-- First, [download](https://sourceforge.net/projects/jason/files/) the _Jason_ bundle and check all the settings through the configuration jar, modifying them accordingly your preferences.
+- First, [download](https://sourceforge.net/projects/jason/files/) the _Jason_ bundle and check all the settings through the configuration jar, modifying them accordingly to your preferences.
 - Make sure to have the [Eclipse IDE](https://www.eclipse.org/) installed on your machine. Then, install the _Jason_ plugin: Help > Install new software... > Add... > type in the "Location"field
 http://jason.sourceforge.net/eclipseplugin/juno/ > Click "Ok" and wait for the "jasonide" feature to appear, then tick the checkbox and step through the installation process.
 - Clone this repository through the `git clone` command.
