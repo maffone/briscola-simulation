@@ -220,10 +220,149 @@ L'architettura completa del sistema è illustrata in \autoref{general-architectu
 
 \subsection{Design di dettaglio} \label{design}
 
+Fissati struttura del sistema ed interazione, si passa ora ad una fase di design di dettaglio, che prevede un raffinamento per quei componenti che presentano ancora alcune lacune per poter essere effettivamente implementati. 
+
+Per quanto concerne arbitro e mazziere, non è necessario apportare perfezionamenti: essi dovranno semplicemente sottostare al regolamento di gioco attenendosi allo schema di interazione illustrato in \autoref{general-architecture}. Lo stesso discorso non può essere fatto per i giocatori, la cui logica interna utilizzata per scegliere la prossima carta da giocare non è ancora stata esplicitata. Si sceglie di assegnare ad ogni carta in mano una priorità, ovvero un valore che esprima quanto sia conveniente giocare una carta in relazione alle altre. Durante la fase di reasoning, questo valore può cambiare a seconda delle informazioni che il giocatore acquisisce, siano esse ricevute come risposta del compagno ad una domanda o acquisite mediante la consultazione delle carte già giocate sul tavolo. Più nello specifico, la valutazione di una carta avviene tramite tre fasi:
+\begin{enumerate}
+	\item \textbf{Assegnamento iniziale della priorità}: ad ogni carta viene assegnata una certa priorità sulla base del suo valore. In questa fase iniziale il giocatore assegna priorità più alta alle carte con valore più basso, in modo da giocare meno punti possibili qualora esso non riesca ad acquisire informazioni utili dal compagno o dal tavolo. Sempre per questa motivazione, alle briscole viene assegnata priorità bassa, di modo da conservarle per momenti più opportuni.
+	\item \textbf{Valutazione delle carte sul tavolo}: il giocatore consulta le eventuali carte già giocate sul tavolo e modifica la priorità delle proprie carte sulla base della seguente strategia: se la dominante è la carta del compagno, allora aumenta la priorità di figure e carichi, di modo da giocare più punti possibile. Se invece la dominante è la carta di uno dei due avversari, il giocatore aumenta la priorità delle carte in grado di prendere sulla dominante stessa.
+	\item \textbf{Domande al compagno}: qualora sia abilitato a farlo, in questa terza fase il giocatore di mano procede nel formulare una o più domande al compagno nel caso non abbia ancora certezza su quale carta giocare. L'ordine e la natura delle domande è stabilito dalla priorità attuale delle carte in mano: la prima sarà finalizzata ad acquisire informazioni utili a modificare la priorità della carta con priorità maggiore, procedendo poi con domande utili per le carte a priorità più bassa qualora sia necessario.    
+\end{enumerate}
+
+È importante precisare che a volte la valutazione potrebbe non passare per tutte le fasi illustrate. Ad esempio, se a seguire della prima fase il giocatore ha un certo livello di confidenza nel giocare una determinata carta rispetto alle altre (ovvero, la priorità della carta è maggiore di una soglia stabilita a priori), allora giocherà quella carta senza eseguire le successive fasi di valutazione. 
+
 \section{Implementazione} \label{implementation}
+In questa sezione verranno descritte le scelte fatte in fase di implementazione, basate sulla progettazione, descritta in \autoref{general-design}. I due componenti principali del progetto sono risultati il sistema multiagente e lo spazio di tuple; di seguito sono riportate, per ognuno di essi, le scelte implementative di maggior rilievo.  
+\subsection{Agenti}
+	Abbiamo scelto di utilizzare \emph{Jason}\footnote{\url{http://jason.sourceforge.net/wp}} per l'implementazione degli agenti. Esso è un interprete basato su \emph{Java} di una versione estesa del linguaggio \emph{AgentSpeak} con sintassi molto simile a quella del \emph{prolog}. Tramite tale linguaggio è possibile programmare i singoli agenti a livello di \emph{belief}, \emph{goal} e \emph{piani}. Ogni agente è stato implementato in modo indipendente, seguendo i compiti a lui assegnati in \autoref{general-design}. L'interazione tra gli agenti avviene come definito in \autoref{problem-analysis}, e si basa su scambio di messaggi o coordinazione tramite lo spazio di tuple. 
+	
+	Gli agenti non hanno solamente un comportamento proattivo, ma grazie all'infrastruttura messa a disposizione da \emph{Jason}, essi sono reattivi alla ricezione di messaggi. Infatti, ogni messaggio recapitato ad un agente, viene inserito nella sua base di conoscenza, come un semplice \emph{belief}. \`{E} possibile aggiungere un \emph{piano} all'agente, che viene eseguito ogni qualvolta un messaggio viene inserito all'interno della sua base di conoscenza. Il flusso di esecuzione di tale piano è parallelo a quello principale dell'agente, e, nel caso arrivino più messaggi, saranno eseguiti più flussi paralleli. In questo modo un agente riesce a essere reattivo alla ricezione dei messaggi, in modo semplice e totalmente trasparente, dato che non richiede l'uso di complesse tecniche di programmazione.
+\subsection{Spazio di tuple}
+Abbiamo deciso di utilizzare \emph{TuCSoN}\footnote{\url{http://apice.unibo.it/xwiki/bin/view/TuCSoN/WebHome}} come spazio di tuple. Purtroppo non è possibile utilizzare \emph{TuCSoN} nativamente all'interno di codice interpretato da \emph{Jason}, per cui ci siamo avvalsi della libreria \emph{TuCSoN4Jason}\footnote{\url{https://apice.unibo.it/xwiki/bin/view/TuCSoN/4Jason}}, che come \emph{TuCSoN} è stata sviluppata all'interno dell'Università di Bologna. 
+
+In fase di implementazione è stato necessario creare un nuovo agente, chiamato \texttt{boot\_agent}, il quale ha lo scopo di inserire, all'avvio del sistema, le reazioni necessarie all'interno dello spazio di tuple. Tali reazioni sono: 
+\begin{itemize}
+	\item Unione delle tuple inerenti ad una domanda, e alla sua risposta, all'interno di un'unica tupla: \emph{conversation}.
+	\item Rimozione dell'ultima mano giocata, una volta che l'arbitro ne inserisce una nuova.
+	\item Inserimento, all'inizio della partita, della tupla inerente all'ultima mano giocata. Tale tupla conterrà una lista vuota, dato che ancora nessuna mano è stata giocata.
+\end{itemize}
+Lo spazio di tuple, nelle fasi di implementazione e testing, è stato eseguito nella stessa macchina su cui erano in esecuzione gli agenti \emph{Jason}. Nulla però vieta di distribuire il sistema, inserendo lo spazio di tuple in una macchina diversa (possibilmente anche remota) rispetto a quella su cui risiedono gli agenti. Anche gli agenti stessi possono venire distribuiti, ad esempio eseguendo ognuno di essi su macchine diverse.
+
+\subsection{Esecuzione}
+Allo stato attuale del sistema, non è stata sviluppata alcuna interfaccia grafica. Il compito di mostrare in tempo reale il progresso dello stato del sistema durante la sua esecuzione è stato quindi affidato ai singoli agenti. Essi devono provvedere a stampare sulla console di output ogni operazione significativa che svolgono, in modo da rendere il flusso di esecuzione del sistema quanto più leggibile e tracciabile. All'interno del repository del progetto \emph{briscola-simulation}\footnote{\url{https://github.com/maffone/briscola-simulation}} (più precisamente al link \url{https://github.com/maffone/briscola-simulation/tree/master/results}), sono presenti dei file di testo contenenti delle tracce di esecuzione complete del sistema. Di seguito viene considerata quella contenuta nel file \emph{run2.txt}, della quale sono analizzati alcuni dei passaggi più significativi.
+
+\subsubsection{Inizio della partita}
+All'avvio del sistema tutti gli agenti sono attivati. In particolare, i quattro giocatori manifestano la loro volontà di partecipare alla partita iscrivendosi presso l'arbitro. Quest'ultimo provvede a determinare in modo casuale sia le squadre che il primo giocatore del primo turno. Subito dopo, viene richiesto l'intervento del mazziere, che mischia le carte del mazzo, distribuisce tre carte ad ogni giocatore e comunica la carta di briscola.
+
+\fvset{frame=single, fontsize=\scriptsize}
+\begin{Verbatim}
+[player1] Hello, I'm player1, I wanna play!
+[player2] Hello, I'm player2, I wanna play!
+[player3] Hello, I'm player3, I wanna play!
+[player4] Hello, I'm player4, I wanna play!
+[dealer] Hello, I'm the dealer of this game!
+[referee] Hello, I'm the referee!
+[referee] A new player wants to join the game, welcome player2!
+[referee] A new player wants to join the game, welcome player3!
+[referee] A new player wants to join the game, welcome player4!
+[referee] A new player wants to join the game, welcome player1!
+[referee] I'm making the teams: player1 is in the red team.
+[referee] I'm making the teams: player4 is in the blue team.
+[referee] I'm making the teams: player3 is in the red team.
+[referee] I'm making the teams: player2 is in the blue team.
+[referee] Let's start the game! The dealer has to shuffle and distribute the cards...
+[referee] The player player4 has been randomly chosen as the first player.
+[dealer] I'm shuffling the deck...
+[dealer] I'm distributing the cards to the players...
+[dealer] Card distributed, my job for this hand is done.
+[dealer] I'm placing the briscola on the table. It's the 1 of coppe.
+\end{Verbatim}
+
+\subsubsection{Svolgimento di un turno di gioco}
+Di seguito è illustrato lo svolgimento completo di un turno di gioco. Si è preso in considerazione il settimo turno della partita, in quanto riflette tutti gli aspetti principali della fase di \emph{resoning} di un giocatore. All'inizio del turno il mazziere distribuisce una carta ad ogni giocatore.
+\begin{Verbatim}
+[referee] It's turn 7, let's start a new hand! The dealer has to distribute the cards...
+[dealer] I'm distributing the cards to the players...
+[dealer] Card distributed, my job for this hand is done.
+\end{Verbatim}
+Il \emph{player1} è il primo giocatore del turno. Si può notare che le carte di cui dispone sono una carta di briscola (4 di coppe) e due figure di semi diversi (re di denari e cavallo di bastoni). Il giocatore è inizialmente portato a giocare una delle due figure, in modo da preservare la briscola per le fasi successive della partita. Si vuole però accertare che il compagno, ovvero \emph{player3}, disponga di almeno una briscola, in modo da non rischiare di regalare punti preziosi agli avversari. Per fare ciò, effettua una domanda al compagno, che risponde, però, negativamente. A questo punto, si rivela necessario valutare una strategia alternativa. Se il compagno fosse in possesso di almeno una figura, il giocatore potrebbe giocare la briscola e far guadagnare alla squadra i punti derivanti dalla figura (avversari permettendo). Per confermare la bontà di questa strategia, pone una seconda domanda al compagno, che questa volta risponde positivamente, spingendo il giocatore a giocare il 4 di coppe.
+\begin{Verbatim}
+[referee] Player player1, it's your turn to play.
+[player1] It's my turn! I need some time to think...
+[player1] I'm looking at the cards on the table...
+[player1] I'm evaluating my cards: [card(10,denari),card(4,coppe),card(9,bastoni)].
+[player1] Mm, I need some help from my teammate: do you have any of coppe?
+[player3] Mm, let me check my cards...
+[player3] I'm sorry, but I don't have such card.
+[player1] Okay, let me think about it...
+[player1] Mm, I need some help from my teammate: do you have figura of any?
+[player3] Mm, let me check my cards...
+[player3] Yes, I have the card you're looking for!
+[player1] Okay, let me think about it...
+[player1] I'm playing this card: 4 of coppe.
+\end{Verbatim}
+Il secondo giocatore, ovvero \emph{player2}, non dispone di alcuna briscola e non è, quindi, in grado di superare la carta dominante calata dal \emph{player1}. Decide quindi di giocare l'unica carta liscia di cui dispone, ovvero il 7 di denari, in modo da non concedere dei punti agli avversari.
+\begin{Verbatim}
+[referee] Player player2, it's your turn to play.
+[player2] It's my turn! I need some time to think...
+[player2] I'm looking at the cards on the table...
+[player2] I'm evaluating my cards: [card(8,denari),card(7,denari),card(9,denari)].
+[player2] I'm playing this card: 7 of denari.
+\end{Verbatim}
+Il \emph{player3} nota che la carta dominante corrente è quella calata dal suo compagno, il \emph{player1}. Perciò decide di giocare l'unica carta fra quelle di cui dispone in grado di apportare dei punti effettivi alla squadra, ovvero il re di bastoni.
+\begin{Verbatim}
+[referee] Player player3, it's your turn to play.
+[player3] It's my turn! I need some time to think...
+[player3] I'm looking at the cards on the table...
+[player3] I'm evaluating my cards: [card(4,denari),card(5,bastoni),card(10,bastoni)].
+[player3] I'm playing this card: 10 of bastoni.
+\end{Verbatim}
+Il \emph{player4} nota che la carta dominante è stata calata da un avversario e avendo nella sua mano una carta di briscola superiore, la gioca.
+\begin{Verbatim}
+[referee] Player player4, it's your turn to play.
+[player4] It's my turn! I need some time to think...
+[player4] I'm looking at the cards on the table...
+[player4] I'm evaluating my cards: [card(2,coppe),card(8,coppe),card(3,spade)].
+[player4] I'm playing this card: 8 of coppe.
+\end{Verbatim}
+Il turno è terminato. L'arbitro decreta il vincitore della mano che è il \emph{player4} e incrementa il punteggio complessivo della squadra blu.
+\begin{Verbatim}
+[referee] This hand is over, I'm now calculating the points...
+[referee] The winner of this hand is player4 with 6 points!
+[referee] The winning team of this hand is the blue team.
+\end{Verbatim}
+
+\subsubsection{Fine della partita}
+Al termine del decimo turno la partita è conclusa. L'arbitro comunica ai giocatori il risultato finale, proclamando la squadra vincitrice. Ogni giocatore reagisce alla notizia e poi abbandona il gioco.
+\begin{Verbatim}
+[referee] The game is over!
+[referee] The final score of the red team is 45.
+[referee] The final score of the blue team is 75.
+[referee] THE BLUE TEAM WON! Congratulations! :)
+[player2] Wow :)
+[player3] Sob :(
+[player4] Wow :)
+[player4] Bye!
+[player1] Sob :(
+[player1] Bye!
+[player3] Bye!
+[player2] Bye!
+\end{Verbatim}
+
 
 \section{Conclusioni} \label{conclusions}
+Siamo complessivamente soddisfatti dei risultati ottenuti in questo progetto. Nei test eseguiti il sistema si comporta bene e i giocatori non solo giocano secondo le regole, ma riescono ad attuare una seppur semplice strategia per riuscire a totalizzare più punti rispetto agli avversari. La coordinazione tra i diversi agenti avviene in modo corretto, e la partita procede in modo del tutto lineare.
 
+Lo spazio di tuple si è dimostrato un'ottimo strumento di coordinazione, sopratutto per sistemi multiagente, come quello da noi sviluppato. Tramite esso, infatti, la coordinazione e lo scambio di informazioni può essere eseguito senza che gli agenti stessi perdano la loro proattività. Ciò è possibile grazie al fatto che sono gli agenti a consultare lo spazio di tuple per ricevere informazioni, e non, come succede ad esempio nel caso di scambio di messaggi, il contrario. Tuttavia è stato necessario immettere una parte di reattività all'interno degli agenti sviluppati, proprio per gestire la ricezione di messaggi. Sotto questo aspetto il linguaggio definito da \emph{Jason} si è rivelato molto potente, dato che tale comportamento è stato raggiunto in modo del tutto trasparente. 
+
+\subsection{Sviluppi futuri}
+Tale progetto non può tuttavia essere considerato del tutto completo. Esso rappresenta una solida base su cui potranno essere innestati ulteriori sviluppi e miglioramenti, atti a renderlo sempre più completo e potenzialmente commercializzabile. Alcuni esempi di tali sviluppi sono:
+\begin{itemize}
+	\item \textbf{Miglioramento dell'intelligenza dei giocatori}: allo stato attuale i giocatori non hanno una strategia a lungo termine, seguita per tutto il corso della partita, ma essi cercano di massimizzare (o minimizzare, nel caso sia il team avversario a vincere) il numero di punti fatti in ogni singola mano. Tale meccanismo, seppur abbastanza verosimile, non è la strategia migliore. I giocatori potrebbero, ad esempio, avere memoria delle carte giocate nei turni precedenti, in modo da poter prevedere quali carte hanno in mano gli avversari. Inoltre le conversazioni possono essere usate per ricavare conoscenza sulle carte in mano del compagno e degli avversari. Ad esempio, se ad un agente viene chiesto se una delle sue carte in mano è un carico, esso può ricavare, con buona probabilità, che il compagno abbia in mano una figura o un carico di briscola. Questa nuova conoscenza può essere sfruttata anche nei turni successivi, nel caso la carta prevista non sia giocata nella mano corrente.
+	\item \textbf{Distribuzione dei componenti del sistema}: come precedentemente accennato, per ora il sistema è stato testato solamente su un'unica macchina. Nulla vieta di distribuire i componenti su più macchine, anche remote, partendo dallo spazio di tuple e dagli agenti. In questo modo si verrà a formare un sistema distribuito, in cui i problemi dati dalle connessioni di rete dovranno essere meglio considerati e risolti. 
+	\item \textbf{Sistema ibrido di umani e agenti}: i giocatori per ora sono formati da soli agenti software. In futuro essi potrebbero essere parzialmente sostituiti da esseri umani, i quali si troverebbero come avversari o come compagno un agente software. Facendo giocare una squadra di umani contro una di agenti può essere inoltre valutata la bontà ed il realismo del sistema prodotto, oltre a essere uno stimolante problema di scienze cognitive e \emph{human computer interaction}.
+	\item \textbf{Interfaccia grafica più accattivante}: per ora l'interfaccia del sistema è composta da una console, su cui i diversi agenti stampano dei messaggi che ne indicano lo stato. Una miglioria potrebbe essere quella di sviluppare un'interfaccia grafica per il sistema, in cui lo stato della partita e degli agenti può essere facilmente ricavato ``ad una prima occhiata''. Una interfaccia simile al famoso gioco \emph{Hearts} presente su \emph{Windows}\footnote{\url{https://www.longfabet888.com/wp-content/uploads/2017/03/Computer-Card-Game.jpg}} darebbe grande beneficio alla fruibilità del sistema da noi sviluppato.
+\end{itemize}
 \fancyhead{}
 \renewcommand{\headrulewidth}{0pt}
 \appendix

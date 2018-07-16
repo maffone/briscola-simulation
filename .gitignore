@@ -29,3 +29,8 @@ report/img/
 !/report/img/
 
 build
+libs
+bin
+.settings/
+.classpath
+.project
