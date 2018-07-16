@@ -154,7 +154,7 @@ think_question(card(liscia, MY_SEED), question(any, MY_SEED)).
 +!evaluate_cards: not(card_score(_, _, _)) <-
 	!watch_cards_on_the_table;
 	.findall(card(VALUE, SEED), card(VALUE, SEED), CARDS_LIST);
-	.print("I'm evaluating my cards...");
+	.print("I'm evaluating my cards: ", CARDS_LIST, ".");
 	for ( .member(CARD, CARDS_LIST) ) {
 		!eval_card(CARD);
 	}.
